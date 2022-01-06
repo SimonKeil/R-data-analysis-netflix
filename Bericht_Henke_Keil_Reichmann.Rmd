@@ -1,0 +1,43 @@
+---
+title: "Untitled"
+author: "Márk Reichmann, Simon Keil, Daniel Henke"
+date: "6 1 2022"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library("tidyverse")
+```
+
+Die Daten sind von
+https://www.kaggle.com/ashishgup/netflix-rotten-tomatoes-metacritic-imdb
+
+Daten einlesen:
+```{r}
+data <- read_csv("Data/netflix-rotten-tomatoes-metacritic-imdb.csv")
+```
+
+bisherige Fragestellungen:
+
+_Welches Land hat das beste Netflix?_
+
+filme/Serien getrennt
+
+    Land - einnahmen
+          (in welhem Land verdient Netflix am meisten?)
+    Sprache - bewerrtungen 
+          (in welcher sprache gibt es den höchsten prozentsatz "guter" filme?)
+    Land - Anzahl pro Genere
+          (gibts mehr deutsche Krimis als Französische?)
+    land - Schuspieler
+          (sind in jedem land verschiedene Schauspieler beliebt?)
+    Land - Sprache 
+          (zB Finnland soll keine Synchros machen)
+    
+Achtung: Sprache evtl nicht vertrauenswürig
+
+
+zB hypothesentest: ich glaube, deutschland schaut viele krimis, und Finnland hat keine übersetzungen
+
+Schätzer für Varianz, Erwartungswert
