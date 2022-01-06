@@ -1,6 +1,6 @@
 # R Projekt
 
 das R projekt für EWS 2021 von:
-    Milena Leitner
+    Simon Keil
     Daniel Henke
     Márk Reichmann
