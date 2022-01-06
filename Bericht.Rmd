@@ -1,0 +1,14 @@
+---
+title: "Untitled"
+author: "Márk Reichmann, Simon Keil, Daniel Henke"
+date: "6 1 2022"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+text :)
+
+$\pi$
