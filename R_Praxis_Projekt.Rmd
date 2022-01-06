@@ -1,0 +1,11 @@
+---
+title: "R_Praxis_Projekt"
+author: "Márk Reichmann, Simon Keil, Daniel Henke"
+date: "6 1 2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
