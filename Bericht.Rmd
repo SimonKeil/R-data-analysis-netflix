@@ -9,6 +9,7 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-text :)
+Die Daten sind von
+https://www.kaggle.com/ashishgup/netflix-rotten-tomatoes-metacritic-imdb
 
 $\pi$
