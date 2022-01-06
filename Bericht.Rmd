@@ -7,9 +7,16 @@ output: github_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library("tidyverse")
 ```
 
 Die Daten sind von
 https://www.kaggle.com/ashishgup/netflix-rotten-tomatoes-metacritic-imdb
 
-$\pi$
+Daten einlesen:
+```{r}
+data <- read_csv("Data/netflix-rotten-tomatoes-metacritic-imdb.csv")
+
+data
+```
+
