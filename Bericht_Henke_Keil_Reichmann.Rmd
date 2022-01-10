@@ -1,5 +1,5 @@
 ---
-title: "Untitled"
+title: "R-Projekt"
 author: "Márk Reichmann, Simon Keil, Daniel Henke"
 date: "6 1 2022"
 output: github_document
@@ -7,14 +7,14 @@ output: github_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-library("tidyverse")
 ```
 
 Die Daten sind von
 https://www.kaggle.com/ashishgup/netflix-rotten-tomatoes-metacritic-imdb
 
 Daten einlesen:
-```{r}
+```{r, message=FALSE}
+library("tidyverse")
 data <- read_csv("Data/netflix-rotten-tomatoes-metacritic-imdb.csv")
 ```
 
@@ -41,3 +41,25 @@ Achtung: Sprache evtl nicht vertrauenswürig
 zB hypothesentest: ich glaube, deutschland schaut viele krimis, und Finnland hat keine übersetzungen
 
 Schätzer für Varianz, Erwartungswert
+
+## Explorative Datenanalyse
+
+Zunächst schauen wir uns an, wieviele Filme und Serien es pro Land gibt und in wievielen Ländern Filme und Serien verfügbar sind. 
+```{r}
+colnames(data)
+title_country <- data%>%
+  select('Country Availability', Title) %>% 
+  rename(country = 'Country Availability') %>% 
+  separate_rows(country, sep = ",") %>% 
+  drop_na()
+
+title_country %>%
+  count(country) %>% 
+  ggplot(mapping = aes(x = n)) + geom_histogram(bins = 15)
+
+title_country %>% 
+  count(Title) %>% 
+  ggplot(mapping = aes(x = n)) + geom_histogram()
+```
+
+
