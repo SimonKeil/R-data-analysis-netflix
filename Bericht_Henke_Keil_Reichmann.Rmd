@@ -47,7 +47,7 @@ Schätzer für Varianz, Erwartungswert
 Zunächst schauen wir uns an, wieviele Filme und Serien es pro Land gibt und in wievielen Ländern Filme und Serien verfügbar sind. 
 ```{r}
 colnames(data)
-title_country <- data%>%
+title_country <- data %>%
   select('Country Availability', Title) %>% 
   rename(country = 'Country Availability') %>% 
   separate_rows(country, sep = ",") %>% 
@@ -55,11 +55,17 @@ title_country <- data%>%
 
 title_country %>%
   count(country) %>% 
-  ggplot(mapping = aes(x = n)) + geom_histogram(bins = 15)
+  ggplot(mapping = aes(x = n)) + geom_histogram(bins = 10) +
+  labs(title = "Anzahl Filme die pro Land verfügbar sind",
+       x = "Anzahl Filme")
 
 title_country %>% 
-  count(Title) %>% 
-  ggplot(mapping = aes(x = n)) + geom_histogram()
+  count(Title) %>%
+  ggplot(mapping = aes(x = n)) +
+  geom_histogram(boundary = 0, bins = 95) +
+  labs(title = "Anzahl Länder in denen Filme verfügbar sind",
+       x = "Anzahl Länder")
+  
 ```
 
 
