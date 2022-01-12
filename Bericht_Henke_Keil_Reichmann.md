@@ -43,40 +43,84 @@ Zunächst schauen wir uns an, wieviele Filme und Serien es pro Land gibt
 und in wievielen Ländern Filme und Serien verfügbar sind.
 
 ``` r
-colnames(data)
-```
-
-    ##  [1] "Title"                 "Genre"                 "Tags"                 
-    ##  [4] "Languages"             "Series or Movie"       "Hidden Gem Score"     
-    ##  [7] "Country Availability"  "Runtime"               "Director"             
-    ## [10] "Writer"                "Actors"                "View Rating"          
-    ## [13] "IMDb Score"            "Rotten Tomatoes Score" "Metacritic Score"     
-    ## [16] "Awards Received"       "Awards Nominated For"  "Boxoffice"            
-    ## [19] "Release Date"          "Netflix Release Date"  "Production House"     
-    ## [22] "Netflix Link"          "IMDb Link"             "Summary"              
-    ## [25] "IMDb Votes"            "Image"                 "Poster"               
-    ## [28] "TMDb Trailer"          "Trailer Site"
-
-``` r
 title_country <- data%>%
   select('Country Availability', Title) %>% 
   rename(country = 'Country Availability') %>% 
   separate_rows(country, sep = ",") %>% 
   drop_na()
 
+n_ger <- (title_country %>%
+            filter(country == "Germany") %>%
+            count())$n
+
 title_country %>%
   count(country) %>% 
-  ggplot(mapping = aes(x = n)) + geom_histogram(bins = 15)
+  ggplot(mapping = aes(x = n)) +
+  geom_histogram(bins = 10) +
+  annotate(geom = "vline",
+           x = n_ger,
+           xintercept = n_ger) +
+  annotate(geom = "text",
+           label = "Deutschland",
+           x = n_ger,
+           y = 5,
+           angle = -90,
+           vjust = -0.5) +
+  labs(title = "Anzahl Filme die pro Land verfügbar sind",
+       x = "Anzahl Filme")
 ```
+
+    ## Warning: Ignoring unknown aesthetics: x
 
 ![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
 
 ``` r
 title_country %>% 
-  count(Title) %>% 
-  ggplot(mapping = aes(x = n)) + geom_histogram()
+  count(Title) %>%
+  ggplot(mapping = aes(x = n)) +
+  geom_histogram(boundary = 0, bins = 95) +
+  labs(title = "Anzahl Länder in denen Filme verfügbar sind",
+       x = "Anzahl Länder")
 ```
 
-    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-
 ![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-2-2.png)<!-- -->
+Nun untersuchen wir die Genres
+
+``` r
+data %>% 
+  drop_na %>% 
+  select(Genre) %>%
+  separate_rows(Genre, sep = ", ") %>%
+  count(Genre) %>% 
+  arrange(desc(n)) %>% 
+  slice(1:10) %>% 
+  ggplot(aes(x = factor(Genre, levels = Genre), y = n)) +
+  geom_bar(stat = 'identity') +
+  labs(title = "Top 10 der Genre",
+    x = "Genre",
+    y = "Anzahl") +
+  theme(axis.text.x = element_text(angle = 45, hjust=1))
+```
+
+![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+
+``` r
+data %>% 
+  drop_na %>% 
+  rename(Country = 'Country Availability') %>% 
+  select(Genre, Country) %>%
+  separate_rows(Country, sep = ",") %>%
+  separate_rows(Genre, sep = ", ") %>%
+  filter(Country == 'Germany') %>% 
+  count(Genre) %>% 
+  arrange(desc(n)) %>% 
+  slice(1:10) %>% 
+  ggplot(aes(x = factor(Genre, levels = Genre), y = n)) +
+  geom_bar(stat = 'identity') +
+  labs(title = "Top 10 der Genre in Deutschland",
+    x = "Genre",
+    y = "Anzahl") +
+  theme(axis.text.x = element_text(angle = 45, hjust=1))
+```
+
+![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-3-2.png)<!-- -->

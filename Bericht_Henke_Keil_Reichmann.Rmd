@@ -46,7 +46,6 @@ Schätzer für Varianz, Erwartungswert
 
 Zunächst schauen wir uns an, wieviele Filme und Serien es pro Land gibt und in wievielen Ländern Filme und Serien verfügbar sind. 
 ```{r}
-colnames(data)
 title_country <- data%>%
   select('Country Availability', Title) %>% 
   rename(country = 'Country Availability') %>% 
@@ -60,12 +59,61 @@ n_ger <- (title_country %>%
 title_country %>%
   count(country) %>% 
   ggplot(mapping = aes(x = n)) +
-  geom_histogram(bins = 15) +
-  geom_vline(xintercept=n_ger)
+  geom_histogram(bins = 10) +
+  annotate(geom = "vline",
+           x = n_ger,
+           xintercept = n_ger) +
+  annotate(geom = "text",
+           label = "Deutschland",
+           x = n_ger,
+           y = 5,
+           angle = -90,
+           vjust = -0.5) +
+  labs(title = "Anzahl Filme die pro Land verfügbar sind",
+       x = "Anzahl Filme")
 
 title_country %>% 
-  count(Title) %>% 
-  ggplot(mapping = aes(x = n)) + geom_histogram()
+  count(Title) %>%
+  ggplot(mapping = aes(x = n)) +
+  geom_histogram(boundary = 0, bins = 95) +
+  labs(title = "Anzahl Länder in denen Filme verfügbar sind",
+       x = "Anzahl Länder")
+
 ```
+Nun untersuchen wir die Genres
+```{r}
+data %>% 
+  drop_na %>% 
+  select(Genre) %>%
+  separate_rows(Genre, sep = ", ") %>%
+  count(Genre) %>% 
+  arrange(desc(n)) %>% 
+  slice(1:10) %>% 
+  ggplot(aes(x = factor(Genre, levels = Genre), y = n)) +
+  geom_bar(stat = 'identity') +
+  labs(title = "Top 10 der Genre",
+    x = "Genre",
+    y = "Anzahl") +
+  theme(axis.text.x = element_text(angle = 45, hjust=1))
+
+
+data %>% 
+  drop_na %>% 
+  rename(Country = 'Country Availability') %>% 
+  select(Genre, Country) %>%
+  separate_rows(Country, sep = ",") %>%
+  separate_rows(Genre, sep = ", ") %>%
+  filter(Country == 'Germany') %>% 
+  count(Genre) %>% 
+  arrange(desc(n)) %>% 
+  slice(1:10) %>% 
+  ggplot(aes(x = factor(Genre, levels = Genre), y = n)) +
+  geom_bar(stat = 'identity') +
+  labs(title = "Top 10 der Genre in Deutschland",
+    x = "Genre",
+    y = "Anzahl") +
+  theme(axis.text.x = element_text(angle = 45, hjust=1))
+```
+
 
 
