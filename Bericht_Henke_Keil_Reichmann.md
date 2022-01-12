@@ -67,14 +67,25 @@ title_country %>%
            angle = -90,
            vjust = -0.5) +
   labs(title = "Anzahl Filme die pro Land verfügbar sind",
-       x = "Anzahl Filme")
-```
+       y = "in so vielen Ländern",
+       x = "ist diese Anzahl Filme Verfügbar.")
+#+
+#  labs(title = "Anzahl Filme die pro Land verfügbar sind",
+#       x = "Anzahl Filme")
 
-    ## Warning: Ignoring unknown aesthetics: x
 
-![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
 
-``` r
+title_country%>%
+  count(country)%>%
+  select(n, country)%>%
+  ggplot(aes(x = n, y = reorder(country, n), colour = n))+
+  geom_point()+
+  labs(title = "Anzahl verfügbarer Filme in verschiedenen Ländern",
+       x = "Anhahl der Filme", 
+       y = " ")
+
+
+
 title_country %>% 
   count(Title) %>%
   ggplot(mapping = aes(x = n)) +
@@ -83,7 +94,7 @@ title_country %>%
        x = "Anzahl Länder")
 ```
 
-![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-2-2.png)<!-- -->
+![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-2-1.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-2-2.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-2-3.png)
 Nun untersuchen wir die Genres
 
 ``` r
@@ -100,11 +111,8 @@ data %>%
     x = "Genre",
     y = "Anzahl") +
   theme(axis.text.x = element_text(angle = 45, hjust=1))
-```
 
-![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
 
-``` r
 data %>% 
   drop_na %>% 
   rename(Country = 'Country Availability') %>% 
@@ -123,4 +131,4 @@ data %>%
   theme(axis.text.x = element_text(angle = 45, hjust=1))
 ```
 
-![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-3-2.png)<!-- -->
+![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-3-1.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-3-2.png)

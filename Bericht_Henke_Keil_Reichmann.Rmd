@@ -6,7 +6,12 @@ output: github_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(
+	echo = TRUE,
+	fig.show = "hold",
+	message = FALSE,
+	warning = FALSE
+)
 ```
 
 Die Daten sind von
@@ -70,7 +75,24 @@ title_country %>%
            angle = -90,
            vjust = -0.5) +
   labs(title = "Anzahl Filme die pro Land verfügbar sind",
-       x = "Anzahl Filme")
+       y = "in so vielen Ländern",
+       x = "ist diese Anzahl Filme Verfügbar.")
+#+
+#  labs(title = "Anzahl Filme die pro Land verfügbar sind",
+#       x = "Anzahl Filme")
+
+
+
+title_country%>%
+  count(country)%>%
+  select(n, country)%>%
+  ggplot(aes(x = n, y = reorder(country, n), colour = n))+
+  geom_point()+
+  labs(title = "Anzahl verfügbarer Filme in verschiedenen Ländern",
+       x = "Anhahl der Filme", 
+       y = " ")
+
+
 
 title_country %>% 
   count(Title) %>%
