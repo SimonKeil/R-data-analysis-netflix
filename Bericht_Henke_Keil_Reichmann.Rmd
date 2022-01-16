@@ -57,9 +57,21 @@ title_country <- data%>%
   separate_rows(country, sep = ",") %>% 
   drop_na()
 
+
 n_ger <- (title_country %>%
             filter(country == "Germany") %>%
             count())$n
+
+
+title_country%>%
+  count(country)%>%
+  select(n, country)%>%
+  ggplot(aes(x = n, y = reorder(country, n), colour = n))+
+  geom_point()+
+  labs(title = "Anzahl verfügbarer Filme in verschiedenen Ländern",
+       x = "Anhahl der Filme", 
+       y = " ")
+
 
 title_country %>%
   count(country) %>% 
@@ -75,31 +87,17 @@ title_country %>%
            angle = -90,
            vjust = -0.5) +
   labs(title = "Anzahl Filme die pro Land verfügbar sind",
-       y = "in so vielen Ländern",
-       x = "ist diese Anzahl Filme Verfügbar.")
-#+
-#  labs(title = "Anzahl Filme die pro Land verfügbar sind",
-#       x = "Anzahl Filme")
-
-
-
-title_country%>%
-  count(country)%>%
-  select(n, country)%>%
-  ggplot(aes(x = n, y = reorder(country, n), colour = n))+
-  geom_point()+
-  labs(title = "Anzahl verfügbarer Filme in verschiedenen Ländern",
-       x = "Anhahl der Filme", 
-       y = " ")
-
+       y = "ist in so vielen Ländern verfügbar",
+       x = "diese Anzahl Filme")
 
 
 title_country %>% 
   count(Title) %>%
   ggplot(mapping = aes(x = n)) +
   geom_histogram(boundary = 0, bins = 95) +
-  labs(title = "Anzahl Länder in denen Filme verfügbar sind",
-       x = "Anzahl Länder")
+  labs(title = "wieviele Filme gibt es, die in genau X-vielen Ländern verfügbar sind?",
+       x = "Anzahl Länder",
+       y = "Anzahl Filme, die so oft verfügbar sind")
 
 ```
 Nun untersuchen wir die Genres
@@ -138,4 +136,91 @@ data %>%
 ```
 
 
+plots zu country und genere
+```{r}
+# vektoren mit zeilennamen zum angenehmen kopieren
+# c(colnames(data))
+
+columns_data = c("Title", "Genre" ,"Tags", "Languages", "Series or Movie", "Hidden Gem Score", "Country Availability", "Runtime", "Director", "Writer", "Actors", "View Rating", "IMDb Score", "Rotten Tomatoes Score", "Metacritic Score", "Awards Received", "Awards Nominated For", "Boxoffice", "Release Date", "Netflix Release Date", "Production House", "Netflix Link", "IMDb Link", "Summary", "IMDb Votes", "Image", "Poster", "TMDb Trailer", "Trailer Site")
+
+columns_countries = c("Argentina", "Australia", "Belgium", "Brazil", "Canada", "Colombia", "Czech Republic", "France", "Germany", "Greece", "Hong Kong", "Hungary", "Iceland", "India", "Israel", "Italy", "Japan", "Lithuania", "Malaysia", "Mexico", "Netherlands", "Poland", "Portugal", "Romania", "Russia", "Singapore", "Slovakia", "South Africa", "South Korea", "Spain", "Sweden", "Switzerland", "Thailand", "Turkey", "United Kingdom", "United States")
+
+columns_generes = c("Action", "Adult", "Adventure", "Animation", "Biography", "Comedy", "Crime", "Documentary", "Drama", "Family", "Fantasy", "Film-Noir", "Game-Show", "History", "Horror", "Music", "Musical", "Mystery", "News", "Reality-TV", "Romance", "Sci-Fi", "Short", "Sport", "Talk-Show", "Thriller", "War", "Western")
+
+#-------------------------------------------------------
+
+unimportand = c("Tags", "Languages", "Series or Movie", "Hidden Gem Score", "Runtime", "Director", "Writer", "Actors", "View Rating", "IMDb Score", "Rotten Tomatoes Score", "Metacritic Score", "Awards Received", "Awards Nominated For", "Boxoffice", "Release Date", "Netflix Release Date", "Production House", "Netflix Link", "IMDb Link", "Summary", "IMDb Votes", "Image", "Poster", "TMDb Trailer", "Trailer Site", "<NA>")
+
+sort_by_genre <- data%>%
+  mutate("Yes" = TRUE)%>%
+  separate_rows(Genre, sep = ", ")%>%
+  spread(key = Genre, value = Yes)%>%
+  select(Title, `Country Availability`, columns_generes)
+#sort_by_genre
+
+sort_by_country <- data%>%
+  mutate("Yes" = TRUE)%>%
+  separate_rows(`Country Availability`, sep = ",")%>%
+  spread(key = `Country Availability`, value = Yes)%>%
+  select(Title, Genre, columns_countries)
+#sort_by_country
+#----------------------
+
+weltweit = sort_by_country%>%
+  separate_rows(Genre, sep = ",")%>%
+  ggplot(aes(y = reorder(Genre, Genre)))+
+  geom_histogram(stat="count")+
+  labs(title = "Weltweit",
+       x = "Anzahl dieses Generes", 
+       y = " ")
+weltweit
+
+germany <- sort_by_country%>%
+  separate_rows(Genre, sep = ",")%>%
+  filter(Germany == TRUE)%>%
+  ggplot(aes(y = reorder(Genre, Genre)))+
+  geom_histogram(stat="count", colour = "green")+
+  labs(title = "Germany",
+       x = "Anzahl dieses Generes", 
+       y = " ")
+
+  germany
+
+germany <- sort_by_country%>%
+  separate_rows(Genre, sep = ",")%>%
+  filter(Germany == TRUE)%>%
+  count(Genre)%>%
+  ggplot()+
+  geom_point(aes(x = n, y = reorder(Genre, Genre)), colour = "green")
+germany
+#------------------------
+weltweit = sort_by_country%>%
+  separate_rows(Genre, sep = ",")%>%
+  count(Genre)%>%
+  drop_na()
+weltweit
+#---------------------
+total_specific <- sort_by_country%>%
+  count(France == TRUE)%>%
+  drop_na()%>%
+  select(n)
+
+specific_country <- sort_by_country%>%
+  separate_rows(Genre, sep = ",")%>%
+  filter(Germany == TRUE)%>%
+  count(Genre)%>%
+  drop_na
+
+sum(specific_country$n)
+
+
+
+ggplot(NULL, aes(x = n, y = reorder(Genre, Genre))) +    # Draw ggplot2 plot based on two data frames
+  geom_col(data = weltweit) +
+  geom_point(data = specific_country, col = "blue")+
+  labs(title = "Weltweit",
+       x = "Anzahl dieses Generes", 
+       y = " ")
+#------------------------
+```
 
