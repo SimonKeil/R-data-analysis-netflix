@@ -166,8 +166,8 @@ sort_by_country <- data%>%
   separate_rows(`Country Availability`, sep = ",")%>%
   spread(key = `Country Availability`, value = Yes)%>%
   select(Title, Genre, columns_countries)%>%
-  separate_rows(Genre, sep = ",")
-#sort_by_country
+  separate_rows(Genre, sep = ", ")
+sort_by_country
 
 #-------------------------------------------------------
 
@@ -175,7 +175,14 @@ weltweit = sort_by_country%>%
   count(Genre)%>%
   drop_na()%>%
   mutate("prozent" = n/sum(n))
+weltweit
 #sum(weltweit$prozent)
+
+#durchschnitt = sort_by_country%>%
+#  select(-Title)%>%
+#  group_by(Genre)%>%
+#  count(Germany, France)
+#durchschnitt
 #---------------------
 
 for(i in columns_countries){
@@ -204,6 +211,8 @@ beobachtungen:
 - short ist auch oft zu hoch
 
 -> vllt muss statt dem weltweiten der durchschnitt der daten für die spezifischen länder berechnet werden
+
+-> Warscheinlich existieren insgesamt wenige Dokumentationen und Shortss, die dafür aber in allen ländern verfügbar sind
 
 - es scheinen sich eher die unbeliebteren genres zu vertauschen
 - deutschland ist voll im Durchschnitt und damit langweilig

@@ -162,16 +162,64 @@ sort_by_country <- data%>%
   separate_rows(`Country Availability`, sep = ",")%>%
   spread(key = `Country Availability`, value = Yes)%>%
   select(Title, Genre, columns_countries)%>%
-  separate_rows(Genre, sep = ",")
-#sort_by_country
+  separate_rows(Genre, sep = ", ")
+sort_by_country
+```
 
+    ## # A tibble: 37,418 x 38
+    ##    Title               Genre  Argentina Australia Belgium Brazil Canada Colombia
+    ##    <chr>               <chr>  <lgl>     <lgl>     <lgl>   <lgl>  <lgl>  <lgl>   
+    ##  1 Lets Fight Ghost    Crime  NA        NA        NA      NA     NA     NA      
+    ##  2 Lets Fight Ghost    Drama  NA        NA        NA      NA     NA     NA      
+    ##  3 Lets Fight Ghost    Fanta~ NA        NA        NA      NA     NA     NA      
+    ##  4 Lets Fight Ghost    Horror NA        NA        NA      NA     NA     NA      
+    ##  5 Lets Fight Ghost    Roman~ NA        NA        NA      NA     NA     NA      
+    ##  6 HOW TO BUILD A GIRL Comedy NA        NA        NA      NA     TRUE   NA      
+    ##  7 Centigrade          Drama  NA        NA        NA      NA     TRUE   NA      
+    ##  8 Centigrade          Thril~ NA        NA        NA      NA     TRUE   NA      
+    ##  9 ANNE+               Drama  NA        NA        TRUE    NA     NA     NA      
+    ## 10 Moxie               Anima~ TRUE      TRUE      TRUE    TRUE   TRUE   TRUE    
+    ## # ... with 37,408 more rows, and 30 more variables: Czech Republic <lgl>,
+    ## #   France <lgl>, Germany <lgl>, Greece <lgl>, Hong Kong <lgl>, Hungary <lgl>,
+    ## #   Iceland <lgl>, India <lgl>, Israel <lgl>, Italy <lgl>, Japan <lgl>,
+    ## #   Lithuania <lgl>, Malaysia <lgl>, Mexico <lgl>, Netherlands <lgl>,
+    ## #   Poland <lgl>, Portugal <lgl>, Romania <lgl>, Russia <lgl>, Singapore <lgl>,
+    ## #   Slovakia <lgl>, South Africa <lgl>, South Korea <lgl>, Spain <lgl>,
+    ## #   Sweden <lgl>, Switzerland <lgl>, Thailand <lgl>, Turkey <lgl>, ...
+
+``` r
 #-------------------------------------------------------
 
 weltweit = sort_by_country%>%
   count(Genre)%>%
   drop_na()%>%
   mutate("prozent" = n/sum(n))
+weltweit
+```
+
+    ## # A tibble: 28 x 3
+    ##    Genre           n  prozent
+    ##    <chr>       <int>    <dbl>
+    ##  1 Action       2810 0.0787  
+    ##  2 Adult          15 0.000420
+    ##  3 Adventure    1809 0.0507  
+    ##  4 Animation    1665 0.0466  
+    ##  5 Biography     636 0.0178  
+    ##  6 Comedy       5077 0.142   
+    ##  7 Crime        1932 0.0541  
+    ##  8 Documentary  1030 0.0288  
+    ##  9 Drama        6359 0.178   
+    ## 10 Family       1433 0.0401  
+    ## # ... with 18 more rows
+
+``` r
 #sum(weltweit$prozent)
+
+#durchschnitt = sort_by_country%>%
+#  select(-Title)%>%
+#  group_by(Genre)%>%
+#  count(Germany, France)
+#durchschnitt
 #---------------------
 
 for(i in columns_countries){
@@ -203,6 +251,9 @@ beobachtungen:
 
 -> vllt muss statt dem weltweiten der durchschnitt der daten für die
 spezifischen länder berechnet werden
+
+-> Warscheinlich existieren insgesamt wenige Dokumentationen und
+Shortss, die dafür aber in allen ländern verfügbar sind
 
 -   es scheinen sich eher die unbeliebteren genres zu vertauschen
 
