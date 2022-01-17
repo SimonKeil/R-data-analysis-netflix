@@ -134,10 +134,10 @@ data %>%
 plots zu country und genere
 
 ``` r
-# vektoren mit zeilennamen zum angenehmen kopieren
+# vektoren mit zeilennamen zum einfacherern kopieren
 # c(colnames(data))
 
-columns_data = c("Title", "Genre" ,"Tags", "Languages", "Series or Movie", "Hidden Gem Score", "Country Availability", "Runtime", "Director", "Writer", "Actors", "View Rating", "IMDb Score", "Rotten Tomatoes Score", "Metacritic Score", "Awards Received", "Awards Nominated For", "Boxoffice", "Release Date", "Netflix Release Date", "Production House", "Netflix Link", "IMDb Link", "Summary", "IMDb Votes", "Image", "Poster", "TMDb Trailer", "Trailer Site")
+columns_data = c("Title", "Genre", "Tags", "Languages", "Series or Movie", "Hidden Gem Score", "Country Availability", "Runtime", "Director", "Writer", "Actors", "View Rating", "IMDb Score", "Rotten Tomatoes Score", "Metacritic Score", "Awards Received", "Awards Nominated For", "Boxoffice", "Release Date", "Netflix Release Date", "Production House", "Netflix Link", "IMDb Link", "Summary", "IMDb Votes", "Image", "Poster", "TMDb Trailer", "Trailer Site")
 
 columns_countries = c("Argentina", "Australia", "Belgium", "Brazil", "Canada", "Colombia", "Czech Republic", "France", "Germany", "Greece", "Hong Kong", "Hungary", "Iceland", "India", "Israel", "Italy", "Japan", "Lithuania", "Malaysia", "Mexico", "Netherlands", "Poland", "Portugal", "Romania", "Russia", "Singapore", "Slovakia", "South Africa", "South Korea", "Spain", "Sweden", "Switzerland", "Thailand", "Turkey", "United Kingdom", "United States")
 
@@ -145,99 +145,68 @@ columns_generes = c("Action", "Adult", "Adventure", "Animation", "Biography", "C
 
 #-------------------------------------------------------
 
-unimportand = c("Tags", "Languages", "Series or Movie", "Hidden Gem Score", "Runtime", "Director", "Writer", "Actors", "View Rating", "IMDb Score", "Rotten Tomatoes Score", "Metacritic Score", "Awards Received", "Awards Nominated For", "Boxoffice", "Release Date", "Netflix Release Date", "Production House", "Netflix Link", "IMDb Link", "Summary", "IMDb Votes", "Image", "Poster", "TMDb Trailer", "Trailer Site", "<NA>")
-
 sort_by_genre <- data%>%
+  select("Title", "Genre", "Country Availability")%>%
+  mutate(id = row_number())%>% # müssen eindeutig sein weil baum
   mutate("Yes" = TRUE)%>%
   separate_rows(Genre, sep = ", ")%>%
   spread(key = Genre, value = Yes)%>%
-  select(Title, `Country Availability`, columns_generes)
+  select(Title, `Country Availability`, columns_generes)%>%
+  separate_rows(`Country Availability`, sep = ",")
 #sort_by_genre
 
 sort_by_country <- data%>%
-  mutate("Yes" = TRUE)%>%
+  select("Title", "Genre", "Country Availability")%>%
+  mutate(id = row_number())%>% # müssen eindeutig sein weil baum
+  mutate("Yes" = TRUE)%>% 
   separate_rows(`Country Availability`, sep = ",")%>%
   spread(key = `Country Availability`, value = Yes)%>%
-  select(Title, Genre, columns_countries)
+  select(Title, Genre, columns_countries)%>%
+  separate_rows(Genre, sep = ",")
 #sort_by_country
-#----------------------
+
+#-------------------------------------------------------
 
 weltweit = sort_by_country%>%
-  separate_rows(Genre, sep = ",")%>%
-  ggplot(aes(y = reorder(Genre, Genre)))+
-  geom_histogram(stat="count")+
-  labs(title = "Weltweit",
-       x = "Anzahl dieses Generes", 
-       y = " ")
-weltweit
-
-germany <- sort_by_country%>%
-  separate_rows(Genre, sep = ",")%>%
-  filter(Germany == TRUE)%>%
-  ggplot(aes(y = reorder(Genre, Genre)))+
-  geom_histogram(stat="count", colour = "green")+
-  labs(title = "Germany",
-       x = "Anzahl dieses Generes", 
-       y = " ")
-
-  germany
-
-germany <- sort_by_country%>%
-  separate_rows(Genre, sep = ",")%>%
-  filter(Germany == TRUE)%>%
   count(Genre)%>%
-  ggplot()+
-  geom_point(aes(x = n, y = reorder(Genre, Genre)), colour = "green")
-germany
-#------------------------
-weltweit = sort_by_country%>%
-  separate_rows(Genre, sep = ",")%>%
-  count(Genre)%>%
-  drop_na()
-weltweit
-```
-
-    ## # A tibble: 55 x 2
-    ##    Genre              n
-    ##    <chr>          <int>
-    ##  1 " Action"        628
-    ##  2 " Adventure"    1380
-    ##  3 " Animation"      16
-    ##  4 " Biography"     203
-    ##  5 " Comedy"       1670
-    ##  6 " Crime"        1216
-    ##  7 " Documentary"     2
-    ##  8 " Drama"        3792
-    ##  9 " Family"       1316
-    ## 10 " Fantasy"      1529
-    ## # ... with 45 more rows
-
-``` r
-#---------------------
-total_specific <- sort_by_country%>%
-  count(France == TRUE)%>%
   drop_na()%>%
-  select(n)
+  mutate("prozent" = n/sum(n))
+#sum(weltweit$prozent)
+#---------------------
 
+for(i in columns_countries){
+  
 specific_country <- sort_by_country%>%
-  separate_rows(Genre, sep = ",")%>%
-  filter(Germany == TRUE)%>%
+  filter(!!as.symbol(i) == TRUE)%>% # ich rufe die gewünschte Spalte auf, obwohl ich nur einen Stig zur verfügung habe
   count(Genre)%>%
-  drop_na
+  drop_na()%>%
+  mutate("prozent" = n/sum(n))
+#sum(specific_country$prozent)
 
-sum(specific_country$n)
-```
-
-    ## [1] 13050
-
-``` r
-ggplot(NULL, aes(x = n, y = reorder(Genre, Genre))) +    # Draw ggplot2 plot based on two data frames
+my_plot = ggplot(NULL, aes(x = prozent, y = reorder(Genre, n))) +    # Draw ggplot2 plot based on two data frames
   geom_col(data = weltweit) +
-  geom_point(data = specific_country, col = "blue")+
-  labs(title = "Weltweit",
-       x = "Anzahl dieses Generes", 
+  geom_point(data = specific_country, col = "orange")+
+  labs(title = i,
+       x = "Genre/gesamt", 
        y = " ")
-#------------------------
+
+print(my_plot)
+}
 ```
 
-![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-1.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-2.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-3.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-4.png)
+![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-1.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-2.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-3.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-4.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-5.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-6.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-7.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-8.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-9.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-10.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-11.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-12.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-13.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-14.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-15.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-16.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-17.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-18.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-19.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-20.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-21.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-22.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-23.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-24.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-25.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-26.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-27.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-28.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-29.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-30.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-31.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-32.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-33.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-34.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-35.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-36.png)
+beobachtungen:
+
+-   warum zum kuckuck ist Documentary die ganze zeit so ein ausreisser??
+
+-   short ist auch oft zu hoch
+
+-> vllt muss statt dem weltweiten der durchschnitt der daten für die
+spezifischen länder berechnet werden
+
+-   es scheinen sich eher die unbeliebteren genres zu vertauschen
+
+-   deutschland ist voll im Durchschnitt und damit langweilig
+
+-   halbwegs interessant finde ich: Japan, United States, south africa,
+    mexico, lithuania, columbia (mehr oder weniger willkürliche wahl,)

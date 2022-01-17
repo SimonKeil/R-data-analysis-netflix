@@ -138,10 +138,10 @@ data %>%
 
 plots zu country und genere
 ```{r}
-# vektoren mit zeilennamen zum angenehmen kopieren
+# vektoren mit zeilennamen zum einfacherern kopieren
 # c(colnames(data))
 
-columns_data = c("Title", "Genre" ,"Tags", "Languages", "Series or Movie", "Hidden Gem Score", "Country Availability", "Runtime", "Director", "Writer", "Actors", "View Rating", "IMDb Score", "Rotten Tomatoes Score", "Metacritic Score", "Awards Received", "Awards Nominated For", "Boxoffice", "Release Date", "Netflix Release Date", "Production House", "Netflix Link", "IMDb Link", "Summary", "IMDb Votes", "Image", "Poster", "TMDb Trailer", "Trailer Site")
+columns_data = c("Title", "Genre", "Tags", "Languages", "Series or Movie", "Hidden Gem Score", "Country Availability", "Runtime", "Director", "Writer", "Actors", "View Rating", "IMDb Score", "Rotten Tomatoes Score", "Metacritic Score", "Awards Received", "Awards Nominated For", "Boxoffice", "Release Date", "Netflix Release Date", "Production House", "Netflix Link", "IMDb Link", "Summary", "IMDb Votes", "Image", "Poster", "TMDb Trailer", "Trailer Site")
 
 columns_countries = c("Argentina", "Australia", "Belgium", "Brazil", "Canada", "Colombia", "Czech Republic", "France", "Germany", "Greece", "Hong Kong", "Hungary", "Iceland", "India", "Israel", "Italy", "Japan", "Lithuania", "Malaysia", "Mexico", "Netherlands", "Poland", "Portugal", "Romania", "Russia", "Singapore", "Slovakia", "South Africa", "South Korea", "Spain", "Sweden", "Switzerland", "Thailand", "Turkey", "United Kingdom", "United States")
 
@@ -149,78 +149,66 @@ columns_generes = c("Action", "Adult", "Adventure", "Animation", "Biography", "C
 
 #-------------------------------------------------------
 
-unimportand = c("Tags", "Languages", "Series or Movie", "Hidden Gem Score", "Runtime", "Director", "Writer", "Actors", "View Rating", "IMDb Score", "Rotten Tomatoes Score", "Metacritic Score", "Awards Received", "Awards Nominated For", "Boxoffice", "Release Date", "Netflix Release Date", "Production House", "Netflix Link", "IMDb Link", "Summary", "IMDb Votes", "Image", "Poster", "TMDb Trailer", "Trailer Site", "<NA>")
-
 sort_by_genre <- data%>%
+  select("Title", "Genre", "Country Availability")%>%
+  mutate(id = row_number())%>% # müssen eindeutig sein weil baum
   mutate("Yes" = TRUE)%>%
   separate_rows(Genre, sep = ", ")%>%
   spread(key = Genre, value = Yes)%>%
-  select(Title, `Country Availability`, columns_generes)
+  select(Title, `Country Availability`, columns_generes)%>%
+  separate_rows(`Country Availability`, sep = ",")
 #sort_by_genre
 
 sort_by_country <- data%>%
-  mutate("Yes" = TRUE)%>%
+  select("Title", "Genre", "Country Availability")%>%
+  mutate(id = row_number())%>% # müssen eindeutig sein weil baum
+  mutate("Yes" = TRUE)%>% 
   separate_rows(`Country Availability`, sep = ",")%>%
   spread(key = `Country Availability`, value = Yes)%>%
-  select(Title, Genre, columns_countries)
+  select(Title, Genre, columns_countries)%>%
+  separate_rows(Genre, sep = ",")
 #sort_by_country
-#----------------------
+
+#-------------------------------------------------------
 
 weltweit = sort_by_country%>%
-  separate_rows(Genre, sep = ",")%>%
-  ggplot(aes(y = reorder(Genre, Genre)))+
-  geom_histogram(stat="count")+
-  labs(title = "Weltweit",
-       x = "Anzahl dieses Generes", 
-       y = " ")
-weltweit
-
-germany <- sort_by_country%>%
-  separate_rows(Genre, sep = ",")%>%
-  filter(Germany == TRUE)%>%
-  ggplot(aes(y = reorder(Genre, Genre)))+
-  geom_histogram(stat="count", colour = "green")+
-  labs(title = "Germany",
-       x = "Anzahl dieses Generes", 
-       y = " ")
-
-  germany
-
-germany <- sort_by_country%>%
-  separate_rows(Genre, sep = ",")%>%
-  filter(Germany == TRUE)%>%
   count(Genre)%>%
-  ggplot()+
-  geom_point(aes(x = n, y = reorder(Genre, Genre)), colour = "green")
-germany
-#------------------------
-weltweit = sort_by_country%>%
-  separate_rows(Genre, sep = ",")%>%
-  count(Genre)%>%
-  drop_na()
-weltweit
-#---------------------
-total_specific <- sort_by_country%>%
-  count(France == TRUE)%>%
   drop_na()%>%
-  select(n)
+  mutate("prozent" = n/sum(n))
+#sum(weltweit$prozent)
+#---------------------
 
+for(i in columns_countries){
+  
 specific_country <- sort_by_country%>%
-  separate_rows(Genre, sep = ",")%>%
-  filter(Germany == TRUE)%>%
+  filter(!!as.symbol(i) == TRUE)%>% # ich rufe die gewünschte Spalte auf, obwohl ich nur einen Stig zur verfügung habe
   count(Genre)%>%
-  drop_na
+  drop_na()%>%
+  mutate("prozent" = n/sum(n))
+#sum(specific_country$prozent)
 
-sum(specific_country$n)
-
-
-
-ggplot(NULL, aes(x = n, y = reorder(Genre, Genre))) +    # Draw ggplot2 plot based on two data frames
+my_plot = ggplot(NULL, aes(x = prozent, y = reorder(Genre, n))) +    # Draw ggplot2 plot based on two data frames
   geom_col(data = weltweit) +
-  geom_point(data = specific_country, col = "blue")+
-  labs(title = "Weltweit",
-       x = "Anzahl dieses Generes", 
+  geom_point(data = specific_country, col = "orange")+
+  labs(title = i,
+       x = "Genre/gesamt", 
        y = " ")
-#------------------------
+
+print(my_plot)
+}
 ```
+beobachtungen: 
+
+- warum zum kuckuck ist Documentary die ganze zeit so ein ausreisser??
+
+- short ist auch oft zu hoch
+
+-> vllt muss statt dem weltweiten der durchschnitt der daten für die spezifischen länder berechnet werden
+
+- es scheinen sich eher die unbeliebteren genres zu vertauschen
+- deutschland ist voll im Durchschnitt und damit langweilig
+
+- halbwegs interessant finde ich: Japan, United States, south africa, mexico, lithuania, columbia
+(mehr oder weniger willkürliche wahl,)
+
 
