@@ -145,10 +145,119 @@ columns_data = c("Title", "Genre", "Tags", "Languages", "Series or Movie", "Hidd
 
 columns_countries = c("Argentina", "Australia", "Belgium", "Brazil", "Canada", "Colombia", "Czech Republic", "France", "Germany", "Greece", "Hong Kong", "Hungary", "Iceland", "India", "Israel", "Italy", "Japan", "Lithuania", "Malaysia", "Mexico", "Netherlands", "Poland", "Portugal", "Romania", "Russia", "Singapore", "Slovakia", "South Africa", "South Korea", "Spain", "Sweden", "Switzerland", "Thailand", "Turkey", "United Kingdom", "United States")
 
-columns_generes = c("Action", "Adult", "Adventure", "Animation", "Biography", "Comedy", "Crime", "Documentary", "Drama", "Family", "Fantasy", "Film-Noir", "Game-Show", "History", "Horror", "Music", "Musical", "Mystery", "News", "Reality-TV", "Romance", "Sci-Fi", "Short", "Sport", "Talk-Show", "Thriller", "War", "Western")
+#-------------------------------------------------------
+sort_by_country <- data%>%
+  select("Title", "Genre", "Country Availability")%>%
+  separate_rows(`Country Availability`, sep = ",")%>%
+  separate_rows(Genre, sep = ", ")%>%
+  count(Genre, `Country Availability`)%>%
+  spread(key = `Country Availability`, value = n)
+#sort_by_country
+
 
 #-------------------------------------------------------
 
+
+# weltweit durchgezählit: wie groß ist der anteil an Horror, Drama, ... von allen medien auf Netflix?
+weltweit = data%>%
+  separate_rows(Genre, sep = ", ")%>%
+  count(Genre)%>%
+  drop_na()%>%
+  mutate("prozent" = n/sum(n))%>%
+  arrange(desc(prozent))
+#weltweit
+#sum(weltweit$prozent)
+
+
+# Durchschnitt von:
+# wie groß ist Anteil an Horror, ... in einem speziellen Land?
+durchschnitt = sort_by_country%>%
+  mutate(n = rowSums(sort_by_country[ , columns_countries]))%>%#alle länder aufsummieren
+  select(Genre, n)%>%
+  drop_na()%>%
+  mutate("prozent" = n/sum(n))%>%
+  arrange(desc(prozent))
+#durchschnitt
+#---------------------
+
+for(i in columns_countries){
+  #i = "France"
+specific_country <- sort_by_country%>%
+  select(Genre, i)%>%
+  drop_na()%>%
+  mutate("prozent" = !!as.symbol(i)/sum(!!as.symbol(i)))# ich rufe die gewünschte Spalte auf, obwohl ich nur einen Stig zur verfügung habe
+
+
+#reorder(Genre, prozent)
+my_plot = ggplot(NULL, aes(x = prozent, y = Genre)) +    # Draw ggplot2 plot based on two data frames
+  geom_col(data = durchschnitt) +
+  geom_point(data = specific_country, col = "orange")+
+  scale_x_continuous(limits = c(0, 0.2))+
+  labs(title = i,
+       x = "Genre/im Land verfügbar", 
+       y = " ")
+
+print(my_plot)
+}
+
+ggplot(NULL, aes(x = prozent, y = reorder(Genre, prozent))) +    # Draw ggplot2 plot based on two data frames
+  geom_col(data = weltweit) +
+  geom_point(data = durchschnitt, col = "orange")+
+  scale_x_continuous(limits = c(0, 0.2))+
+  labs(title = "weltweite Verteilung (bar)",
+       x = "durchschnittliche Verteilung pro land (orange)", 
+       y = " ")
+```
+beobachtungen: 
+
+- documentary, realyty tv und shorts sind ausreißer
+
+-> Warscheinlich existieren insgesamt wenige Dokumentationen und Shortss, die dafür aber in viel mehr ländern verfügbar sind
+damit fallen sie Insgesamt nicht ins gewicht, in einem land prozentual aber schon
+
+insgesamt gibts etwa 6 - mal so viele Dramen wie Documentaries, aber in den einzelnen ländern sind es nurnoch etwa 3mal so viele
+
+```{r}
+
+columns_generes = c("Action", "Adult", "Adventure", "Animation", "Biography", "Comedy", "Crime", "Documentary", "Drama", "Family", "Fantasy", "Film-Noir", "Game-Show", "History", "Horror", "Music", "Musical", "Mystery", "News", "Reality-TV", "Romance", "Sci-Fi", "Short", "Sport", "Talk-Show", "Thriller", "War", "Western")
+
+sort_by_genre <- data%>%
+  select("Title", "Genre", "Country Availability")%>%
+  separate_rows(`Country Availability`, sep = ",")%>%
+  separate_rows(Genre, sep = ", ")%>%
+  count(Genre, `Country Availability`)%>%
+  spread(key = Genre, value = n)
+#sort_by_genre
+
+sort_by_genre%>%
+  select(`Country Availability`, Documentary, Drama)
+
+
+data%>%
+  select("Title", "Genre")%>%
+  separate_rows(Genre, sep = ", ")%>%
+  count(Genre)%>%
+  filter(Genre == "Documentary" | Genre == "Drama")
+
+```
+
+
+- es scheinen sich eher die unbeliebteren genres zu vertauschen
+- deutschland ist voll im Durchschnitt und damit langweilig
+
+- halbwegs interessant finde ich: Japan, United States, south africa, mexico, lithuania, columbia
+(mehr oder weniger willkürliche wahl,)
+
+_ intuitiver: balken = land, punkt = weltweit
+
+- Show/ Filme unterscheiden (in wievielen Sprachen sind diese verüügbar?)
+
+
+
+
+
+evtl wiederverwertbare codeschnipsel
+```{r eval=FALSE, include=FALSE}
 sort_by_genre <- data%>%
   select("Title", "Genre", "Country Availability")%>%
   mutate(id = row_number())%>% # müssen eindeutig sein weil baum
@@ -169,55 +278,13 @@ sort_by_country <- data%>%
   separate_rows(Genre, sep = ", ")
 sort_by_country
 
-#-------------------------------------------------------
 
-weltweit = sort_by_country%>%
-  count(Genre)%>%
-  drop_na()%>%
-  mutate("prozent" = n/sum(n))
-weltweit
-#sum(weltweit$prozent)
-
-#durchschnitt = sort_by_country%>%
-#  select(-Title)%>%
-#  group_by(Genre)%>%
-#  count(Germany, France)
-#durchschnitt
-#---------------------
-
-for(i in columns_countries){
-  
 specific_country <- sort_by_country%>%
   filter(!!as.symbol(i) == TRUE)%>% # ich rufe die gewünschte Spalte auf, obwohl ich nur einen Stig zur verfügung habe
   count(Genre)%>%
   drop_na()%>%
   mutate("prozent" = n/sum(n))
 #sum(specific_country$prozent)
-
-my_plot = ggplot(NULL, aes(x = prozent, y = reorder(Genre, n))) +    # Draw ggplot2 plot based on two data frames
-  geom_col(data = weltweit) +
-  geom_point(data = specific_country, col = "orange")+
-  labs(title = i,
-       x = "Genre/gesamt", 
-       y = " ")
-
-print(my_plot)
-}
 ```
-beobachtungen: 
-
-- warum zum kuckuck ist Documentary die ganze zeit so ein ausreisser??
-
-- short ist auch oft zu hoch
-
--> vllt muss statt dem weltweiten der durchschnitt der daten für die spezifischen länder berechnet werden
-
--> Warscheinlich existieren insgesamt wenige Dokumentationen und Shortss, die dafür aber in allen ländern verfügbar sind
-
-- es scheinen sich eher die unbeliebteren genres zu vertauschen
-- deutschland ist voll im Durchschnitt und damit langweilig
-
-- halbwegs interessant finde ich: Japan, United States, south africa, mexico, lithuania, columbia
-(mehr oder weniger willkürliche wahl,)
 
 
