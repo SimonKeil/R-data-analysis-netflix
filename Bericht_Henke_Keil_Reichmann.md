@@ -364,10 +364,11 @@ left_join(year_per_genre, year_genre_total, by = "year") %>%
 
 ![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
-Wir beobachten: Mit zunehmender Jahreszahl gibt es mehr Genres und die
-einzelnen Genres tendieren dazu einen kleineren Anteil auszumachen.
-Zählen wir die Genres pro Jahr erhalten wir einen annährend linearen
-Zusammenhang:
+Trotz (nzw. sogar wegen) des Overplotting sehen wir klar: Mit
+zunehmender Jahreszahl gibt es mehr Genres und die einzelnen Genres
+tendieren dazu einen kleineren Anteil auszumachen, denn die Punkte
+liegen rechts unten im Plot am dichtesten. Zählen wir die Genres pro
+Jahr erhalten wir einen annährend linearen Zusammenhang:
 
 ``` r
 temp <- data %>%
@@ -399,11 +400,11 @@ Film in einem gegebenen Jahr zugeordnet wird:
 
 ``` r
 data %>%
-  drop_na() %>%
   separate_rows(Genre, sep = ", ") %>%
   mutate(year = as.integer(substr(`Release Date`, 8, 12))) %>% 
   select(Genre, year, Title) %>% 
   filter(year > 1960 & year < 2020) %>% 
+  drop_na() %>%
   count(Title, year) %>%
   group_by(year) %>% 
   summarise(number = mean(n)) %>% 
@@ -417,10 +418,11 @@ data %>%
 ![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
 Anhand des Plots lässt sich diese Vermutung widerlegen, denn die Zahl
-der Genres ist mehr oder weniger konstant um die drei, lediglich vor
-1980 sieht man etwas stärkere Schwankungen die vermutlich darauf
-zurückzuführen ist, dass in diesen Jahren die Zahl der Filme die
-verfügbar sind relativ klein ist.
+der Genres ist fast immer zwischen 2.5 und .5, lediglich vor 1980 sieht
+man etwas stärkere Schwankungen die vermutlich darauf zurückzuführen
+ist, dass in diesen Jahren die Zahl der Filme die verfügbar sind relativ
+klein ist. In den Filmen der letzten Jahre ist sogar eher ein
+Abwärtstrend erkennbar.
 
 An dieser Stelle ließe sich jetzt eine Analyse des linearen Modells
 anschließen, die beiden “Überflieger”-Genres Drama und Comedy, die sich
