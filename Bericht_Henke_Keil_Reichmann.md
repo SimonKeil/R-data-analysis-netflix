@@ -147,7 +147,10 @@ sort_by_country <- data%>%
   separate_rows(`Country Availability`, sep = ",")%>%
   separate_rows(Genre, sep = ", ")%>%
   count(Genre, `Country Availability`)%>%
-  spread(key = `Country Availability`, value = n)
+  spread(key = `Country Availability`, value = n)%>%
+  select(-"<NA>")%>% # ab hier bringe ich die NA werte in ordnung
+  filter(!is.na(Genre))%>%
+  replace(is.na(.), 0)
 #sort_by_country
 
 
@@ -162,7 +165,6 @@ weltweit = data%>%
   mutate("prozent" = n/sum(n))%>%
   arrange(desc(prozent))
 #weltweit
-#sum(weltweit$prozent)
 
 
 # Durchschnitt von:
@@ -171,13 +173,14 @@ durchschnitt = sort_by_country%>%
   mutate(n = rowSums(sort_by_country[ , columns_countries]))%>%#alle länder aufsummieren
   select(Genre, n)%>%
   drop_na()%>%
+  mutate(n = as.integer(n))%>% 
   mutate("prozent" = n/sum(n))%>%
   arrange(desc(prozent))
 #durchschnitt
 #---------------------
 
 for(i in columns_countries){
-  #i = "France"
+  
 specific_country <- sort_by_country%>%
   select(Genre, i)%>%
   drop_na()%>%
@@ -185,7 +188,7 @@ specific_country <- sort_by_country%>%
 
 
 #reorder(Genre, prozent)
-my_plot = ggplot(NULL, aes(x = prozent, y = Genre)) +    # Draw ggplot2 plot based on two data frames
+my_plot = ggplot(NULL, aes(x = prozent, y = reorder(Genre, prozent))) +    # Draw ggplot2 plot based on two data frames
   geom_col(data = durchschnitt) +
   geom_point(data = specific_country, col = "orange")+
   scale_x_continuous(limits = c(0, 0.2))+
@@ -225,14 +228,38 @@ sort_by_genre <- data%>%
   separate_rows(`Country Availability`, sep = ",")%>%
   separate_rows(Genre, sep = ", ")%>%
   count(Genre, `Country Availability`)%>%
-  spread(key = Genre, value = n)
-#sort_by_genre
+  spread(key = Genre, value = n)%>%
+  select(-"<NA>")%>% # ab hier bringe ich die NA werte in ordnung
+  filter(!is.na(`Country Availability`))%>%
+  replace(is.na(.), 0)
+sort_by_genre
+```
 
+    ## # A tibble: 36 x 29
+    ##    `Country Availabilit~ Action Adult Adventure Animation Biography Comedy Crime
+    ##    <chr>                  <int> <int>     <int>     <int>     <int>  <int> <int>
+    ##  1 Argentina                914     2       630       591       199   1793   674
+    ##  2 Australia                932     4       611       607       224   1993   731
+    ##  3 Belgium                  971     2       679       639       220   1919   742
+    ##  4 Brazil                   896     2       617       575       196   1724   658
+    ##  5 Canada                  1022     4       645       617       225   2008   765
+    ##  6 Colombia                 904     2       623       575       199   1577   672
+    ##  7 Czech Republic          1002     5       660       568       250   2129   765
+    ##  8 France                   886     2       624       652       202   1848   656
+    ##  9 Germany                  972     4       679       593       233   1949   719
+    ## 10 Greece                   851     3       549       503       192   1816   642
+    ## # ... with 26 more rows, and 21 more variables: Documentary <int>, Drama <int>,
+    ## #   Family <int>, Fantasy <int>, Film-Noir <int>, Game-Show <int>,
+    ## #   History <int>, Horror <int>, Music <int>, Musical <int>, Mystery <int>,
+    ## #   News <int>, Reality-TV <int>, Romance <int>, Sci-Fi <int>, Short <int>,
+    ## #   Sport <int>, Talk-Show <int>, Thriller <int>, War <int>, Western <int>
+
+``` r
 sort_by_genre%>%
   select(`Country Availability`, Documentary, Drama)
 ```
 
-    ## # A tibble: 37 x 3
+    ## # A tibble: 36 x 3
     ##    `Country Availability` Documentary Drama
     ##    <chr>                        <int> <int>
     ##  1 Argentina                      599  2068
@@ -245,7 +272,7 @@ sort_by_genre%>%
     ##  8 France                         577  2074
     ##  9 Germany                        588  2229
     ## 10 Greece                         600  2161
-    ## # ... with 27 more rows
+    ## # ... with 26 more rows
 
 ``` r
 data%>%
@@ -267,8 +294,6 @@ data%>%
 
 -   halbwegs interessant finde ich: Japan, United States, south africa,
     mexico, lithuania, columbia (mehr oder weniger willkürliche wahl,)
-
-\_ intuitiver: balken = land, punkt = weltweit
 
 -   Show/ Filme unterscheiden (in wievielen Sprachen sind diese
     verüügbar?)

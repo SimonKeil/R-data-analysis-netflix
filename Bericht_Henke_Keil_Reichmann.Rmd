@@ -151,7 +151,10 @@ sort_by_country <- data%>%
   separate_rows(`Country Availability`, sep = ",")%>%
   separate_rows(Genre, sep = ", ")%>%
   count(Genre, `Country Availability`)%>%
-  spread(key = `Country Availability`, value = n)
+  spread(key = `Country Availability`, value = n)%>%
+  select(-"<NA>")%>% # ab hier bringe ich die NA werte in ordnung
+  filter(!is.na(Genre))%>%
+  replace(is.na(.), 0)
 #sort_by_country
 
 
@@ -166,7 +169,6 @@ weltweit = data%>%
   mutate("prozent" = n/sum(n))%>%
   arrange(desc(prozent))
 #weltweit
-#sum(weltweit$prozent)
 
 
 # Durchschnitt von:
@@ -175,13 +177,14 @@ durchschnitt = sort_by_country%>%
   mutate(n = rowSums(sort_by_country[ , columns_countries]))%>%#alle länder aufsummieren
   select(Genre, n)%>%
   drop_na()%>%
+  mutate(n = as.integer(n))%>% 
   mutate("prozent" = n/sum(n))%>%
   arrange(desc(prozent))
 #durchschnitt
 #---------------------
 
 for(i in columns_countries){
-  #i = "France"
+  
 specific_country <- sort_by_country%>%
   select(Genre, i)%>%
   drop_na()%>%
@@ -189,7 +192,7 @@ specific_country <- sort_by_country%>%
 
 
 #reorder(Genre, prozent)
-my_plot = ggplot(NULL, aes(x = prozent, y = Genre)) +    # Draw ggplot2 plot based on two data frames
+my_plot = ggplot(NULL, aes(x = prozent, y = reorder(Genre, prozent))) +    # Draw ggplot2 plot based on two data frames
   geom_col(data = durchschnitt) +
   geom_point(data = specific_country, col = "orange")+
   scale_x_continuous(limits = c(0, 0.2))+
@@ -226,8 +229,11 @@ sort_by_genre <- data%>%
   separate_rows(`Country Availability`, sep = ",")%>%
   separate_rows(Genre, sep = ", ")%>%
   count(Genre, `Country Availability`)%>%
-  spread(key = Genre, value = n)
-#sort_by_genre
+  spread(key = Genre, value = n)%>%
+  select(-"<NA>")%>% # ab hier bringe ich die NA werte in ordnung
+  filter(!is.na(`Country Availability`))%>%
+  replace(is.na(.), 0)
+sort_by_genre
 
 sort_by_genre%>%
   select(`Country Availability`, Documentary, Drama)
@@ -247,8 +253,6 @@ data%>%
 
 - halbwegs interessant finde ich: Japan, United States, south africa, mexico, lithuania, columbia
 (mehr oder weniger willkürliche wahl,)
-
-_ intuitiver: balken = land, punkt = weltweit
 
 - Show/ Filme unterscheiden (in wievielen Sprachen sind diese verüügbar?)
 
