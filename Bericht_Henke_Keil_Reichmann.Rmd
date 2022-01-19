@@ -296,7 +296,7 @@ genre_year <- data %>%
   select(Genre, year)
 year_per_genre<- genre_year %>%
   count(year, Genre)
-year_genre_total <- year_genre %>% count(year)
+year_genre_total <- genre_year %>% count(year)
 left_join(year_per_genre, year_genre_total, by = "year") %>% 
   mutate(prop = n.x/n.y) %>% 
   filter(Genre %in% c("Crime", "Romance", "Musical", "Western")) %>% 

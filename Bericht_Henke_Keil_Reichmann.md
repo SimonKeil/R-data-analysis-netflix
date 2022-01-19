@@ -274,3 +274,41 @@ data%>%
     verüügbar?)
 
 evtl wiederverwertbare codeschnipsel
+
+## Genre vs. Year
+
+``` r
+genre_year <- data %>%
+  drop_na() %>%
+  separate_rows(Genre, sep = ", ") %>%
+  mutate(year = as.integer(substr(`Release Date`, 8, 12))) %>% 
+  select(Genre, year)
+year_per_genre<- genre_year %>%
+  count(year, Genre)
+year_genre_total <- genre_year %>% count(year)
+left_join(year_per_genre, year_genre_total, by = "year") %>% 
+  mutate(prop = n.x/n.y) %>% 
+  filter(Genre %in% c("Crime", "Romance", "Musical", "Western")) %>% 
+  ggplot(aes(x = year, y = prop, color = Genre)) + geom_smooth()
+```
+
+![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+
+``` r
+genre_year_ger <- data %>%
+  drop_na() %>%
+  separate_rows(Genre, sep = ", ") %>%
+  separate_rows(`Country Availability`, sep = ",") %>%
+  filter(`Country Availability` == "Germany") %>% 
+  mutate(year = as.integer(substr(`Release Date`, 8, 12))) %>% 
+  select(Genre, year)
+year_per_genre_ger <- genre_year_ger %>%
+  count(year, Genre)
+year_genre_total_ger <- genre_year_ger %>% count(year)
+left_join(year_per_genre_ger, year_genre_total_ger, by = "year") %>% 
+  mutate(prop = n.x/n.y) %>% 
+  filter(Genre %in% c("Crime", "Romance", "Musical", "Western")) %>% 
+  ggplot(aes(x = year, y = prop, color = Genre)) + geom_smooth()
+```
+
+![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
