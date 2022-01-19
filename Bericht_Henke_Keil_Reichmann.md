@@ -302,57 +302,114 @@ evtl wiederverwertbare codeschnipsel
 
 ## Genre vs. Year
 
+*Mein Vorschlag wäre hieran das Projekt aufzuziehen (\~Simon)*
+
+Wir schauen uns an, welchen Anteil die Genres im Verlauf der Zeit haben.
+Weil von vor 1965 und aus 2020/21 kaum Filme auf Netflix sind,
+betrachten wir nur die Daten der Jahre 1965-2019:
+
 ``` r
 genre_year <- data %>%
-  drop_na() %>%
   separate_rows(Genre, sep = ", ") %>%
   mutate(year = as.integer(substr(`Release Date`, 8, 12))) %>% 
-  select(Genre, year)
+  filter(year >= 1965 & year < 2020) %>% 
+  select(Genre, year) %>%
+  drop_na()
 year_per_genre<- genre_year %>%
   count(year, Genre)
 year_genre_total <- genre_year %>% count(year)
 left_join(year_per_genre, year_genre_total, by = "year") %>% 
   mutate(prop = n.x/n.y) %>% 
-  filter(Genre %in% c("Crime", "Romance", "Musical", "Western")) %>% 
   ggplot(aes(x = year, y = prop, color = Genre)) + geom_point()
 ```
 
 ![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
-``` r
-genre_year_ger <- data %>%
-  drop_na() %>%
-  separate_rows(Genre, sep = ", ") %>%
-  separate_rows(`Country Availability`, sep = ",") %>%
-  filter(`Country Availability` == "Germany") %>% 
-  mutate(year = as.integer(substr(`Release Date`, 8, 12))) %>%
-  select(Genre, year)
-year_per_genre_ger <- genre_year_ger %>%
-  count(year, Genre)
-year_genre_total_ger <- genre_year_ger %>% count(year)
-left_join(year_per_genre_ger, year_genre_total_ger, by = "year") %>% 
-  mutate(prop = n.x/n.y) %>% 
-  filter(Genre %in% c("Crime", "Romance", "Musical", "Western")) %>% 
-  ggplot(aes(x = year, y = prop, color = Genre)) + geom_smooth()
-```
-
-![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+Wir beobachten: Mit zunehmender Jahreszahl gibt es mehr Genres und die
+einzelnen Genres tendieren dazu einen kleineren Anteil auszumachen.
+Zählen wir die Genres pro Jahr erhalten wir einen annährend linearen
+Zusammenhang:
 
 ``` r
-data %>% drop_na() %>%
+temp <- data %>%
   separate_rows(Genre, sep = ", ") %>%
   mutate(year = as.integer(substr(`Release Date`, 8, 12))) %>% 
   select(Genre, year) %>% 
+  drop_na() %>%
   filter(year > 1960 & year < 2020) %>% 
   group_by(year) %>% 
   distinct() %>% 
-  count(year) %>% 
+  count(year)
+temp %>% 
   ggplot(aes(x = year, y = n)) +
   geom_point() +
   geom_smooth(method = 'lm')
+
+lm <- lm(temp$year ~ temp$n)
+coef(lm)
+```
+
+    ## (Intercept)      temp$n 
+    ## 1926.503577    3.341917
+
+``` r
+summary(lm)
+```
+
+    ## 
+    ## Call:
+    ## lm(formula = temp$year ~ temp$n)
+    ## 
+    ## Residuals:
+    ##     Min      1Q  Median      3Q     Max 
+    ## -8.6838 -3.6195 -0.0515  4.3548 11.1030 
+    ## 
+    ## Coefficients:
+    ##             Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept) 1926.504      2.688  716.73   <2e-16 ***
+    ## temp$n         3.342      0.137   24.39   <2e-16 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 5.124 on 57 degrees of freedom
+    ## Multiple R-squared:  0.9125, Adjusted R-squared:  0.911 
+    ## F-statistic: 594.7 on 1 and 57 DF,  p-value: < 2.2e-16
+
+![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+
+Allerdings wird in unserem Datensatz ein Film i.d.R. mehreren Genres
+zugeordnet. Liegt der Zusammenhang also eventuell daran, dass neuere
+Filme einfach mehr unterschiedlichen Genres zugeordnet werden? Um das zu
+beantworten plotten wir die durchschnittliche Zahl der Genres denen ein
+Film in einem gegebenen Jahr zugeordnet wird:
+
+``` r
+data %>%
+  drop_na() %>%
+  separate_rows(Genre, sep = ", ") %>%
+  mutate(year = as.integer(substr(`Release Date`, 8, 12))) %>% 
+  select(Genre, year, Title) %>% 
+  filter(year > 1960 & year < 2020) %>% 
+  count(Title, year) %>%
+  group_by(year) %>% 
+  summarise(number = mean(n)) %>% 
+  ggplot(aes(x = year, y = number)) +
+  geom_point() +
+  labs(title = "Genres pro Film im zeitlichen Verlauf",
+       y = "Durchschnittliche Zahl der Genres pro Film",
+       x = "Jahr")
 ```
 
 ![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
-Hypothese: Netflix bietet bei neueren Filmen mehr Genres an, mit
-linearem Zusammenhang.
+Anhand des Plots lässt sich diese Vermutung widerlegen, denn die Zahl
+der Genres ist mehr oder weniger konstant um die drei, lediglich vor
+1980 sieht man etwas stärkere Schwankungen die vermutlich darauf
+zurückzuführen ist, dass in diesen Jahren die Zahl der Filme die
+verfügbar sind relativ klein ist.
+
+An dieser Stelle ließe sich jetzt eine Analyse des linearen Modells
+anschließen, die beiden “Überflieger”-Genres Drama und Comedy, die sich
+etwas dem abfallenden Trend widersetzen könnte man näher beleuchten, man
+könnte länderspezifisch die Analyse fortsetzen. Andere Variablen mit
+einzubeziehen ist natürlich auch möglich.
