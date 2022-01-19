@@ -289,7 +289,7 @@ year_genre_total <- genre_year %>% count(year)
 left_join(year_per_genre, year_genre_total, by = "year") %>% 
   mutate(prop = n.x/n.y) %>% 
   filter(Genre %in% c("Crime", "Romance", "Musical", "Western")) %>% 
-  ggplot(aes(x = year, y = prop, color = Genre)) + geom_smooth()
+  ggplot(aes(x = year, y = prop, color = Genre)) + geom_point()
 ```
 
 ![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
@@ -300,7 +300,7 @@ genre_year_ger <- data %>%
   separate_rows(Genre, sep = ", ") %>%
   separate_rows(`Country Availability`, sep = ",") %>%
   filter(`Country Availability` == "Germany") %>% 
-  mutate(year = as.integer(substr(`Release Date`, 8, 12))) %>% 
+  mutate(year = as.integer(substr(`Release Date`, 8, 12))) %>%
   select(Genre, year)
 year_per_genre_ger <- genre_year_ger %>%
   count(year, Genre)
@@ -312,3 +312,22 @@ left_join(year_per_genre_ger, year_genre_total_ger, by = "year") %>%
 ```
 
 ![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+
+``` r
+data %>% drop_na() %>%
+  separate_rows(Genre, sep = ", ") %>%
+  mutate(year = as.integer(substr(`Release Date`, 8, 12))) %>% 
+  select(Genre, year) %>% 
+  filter(year > 1960 && year < 2020) %>% 
+  group_by(year) %>% 
+  distinct() %>% 
+  count(year) %>% 
+  ggplot(aes(x = year, y = n)) +
+  geom_point() +
+  geom_smooth(method = 'lm')
+```
+
+![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+
+Hypothese: Netflix bietet bei neueren Filmen mehr Genres an, mit
+linearem Zusammenhang.
