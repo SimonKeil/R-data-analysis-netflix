@@ -323,7 +323,7 @@ data %>% drop_na() %>%
   separate_rows(Genre, sep = ", ") %>%
   mutate(year = as.integer(substr(`Release Date`, 8, 12))) %>% 
   select(Genre, year) %>% 
-  filter(year > 1960 && year < 2020) %>% 
+  filter(year > 1960 & year < 2020) %>% 
   group_by(year) %>% 
   distinct() %>% 
   count(year) %>% 
