@@ -3,8 +3,45 @@ R-Projekt
 Márk Reichmann, Simon Keil, Daniel Henke
 6 1 2022
 
-Die Daten sind von
-<https://www.kaggle.com/ashishgup/netflix-rotten-tomatoes-metacritic-imdb>
+## Einleitung
+
+Als 1997 ein kleine Online-Videothek für DVDs in Kalifornien gegründet
+wurde, war niemanden klar, wie dieses Unternehmen die Welt verändern
+würde. Jetzt, knapp 25 Jahre später, ist Netflix der größte
+Video-on-Demand-Anbieter der Welt mit knapp 200 Millionen Abonnenten
+\[1\]. Der Streaming-Riese ist heute in mehr als 190 Ländern verfügbar
+und hat tausende Inhalte in verschieden Sprachen \[2\].
+
+Doch Netflix ist nicht gleich Netflix: Netflix ist regional aufgrund von
+unterschiedlichen Lizenzvereinbarungen und kultureller Unterschiede zum
+Teil sehr unterschiedlich. Was man auf Netflix Deutschland gucken kann,
+muss nicht bei Netflix USA verfügbar sein. Dies wollen wir im folgenden
+Bericht genauer untersuchen und diese Unterschiede herausarbeiten. Denn
+wir wollen herausfinden: **Welches Land hat das beste Netflix?**
+
+Hierzu haben wir Daten von Kaggle, genauer gesagt von Ashish Gupta,
+unter
+<https://www.kaggle.com/ashishgup/netflix-rotten-tomatoes-metacritic-imdb>.
+Da es keine offizielle Netflix API gibt, wurden hier Daten von mehreren
+verschiedenen APIs und Seiten wie “Rotten Tomatoes”, “iMDB” und weiteren
+Quellen zusammengetragen. Zudem hat er eine eigene Metrik, den “Hidden
+Gem Score”, hinzugefügt, der aus den Daten Geheimtipps ermitteln soll.
+Diesen haben wir aber für unsere Betrachungen nicht beachtet.
+
+Aufgrund der Hetereogenität der Daten sind manche Variablen
+vertrauenswürdiger als andere. Zum Teil scheinen die Sprachen nicht
+akurat zu sein, auch Sprachen wie “Latin” werden genannt, die wir in
+keinem Film auf Netflix finden konnten. Wir vermuten Übersetzungsfehler,
+können aber den Fehlerursprung nicht eindeutig ermitteln. Zum Teil sind
+auch bei Zusammenfügen der Daten aus verschiedenen Quellen Fehler
+aufgetreten. So ist bei der Serie “Barberen??????” die Netflix-Serie
+deutscher Herkunft mit dem iMDB-Eintrag tschechischen Film ???? aus 20??
+verbunden wurden. So sind die Daten zum Teil von der Serie, zum Teil vom
+Film.
+
+Da dies aber (nach unserem Wissen) Einzelfälle sind und es zu diesem
+Thema kaum bis keine besseren Daten gibt, haben wir trotz dieser
+Probleme dieses Datenset verwendet.
 
 Daten einlesen:
 
@@ -20,20 +57,20 @@ bisherige Fragestellungen:
 filme/Serien getrennt
 
     Land - einnahmen
-          (in welhem Land verdient Netflix am meisten?)
-    Sprache - bewerrtungen 
-          (in welcher sprache gibt es den höchsten prozentsatz "guter" filme?)
-    Land - Anzahl pro Genere
-          (gibts mehr deutsche Krimis als Französische?)
-    land - Schuspieler
-          (sind in jedem land verschiedene Schauspieler beliebt?)
+          (in welchem Land verdient Netflix am meisten?)
+    Sprache - Bewertungen 
+          (in welcher Sprache gibt es den höchsten Prozentsatz "guter" Filme?)
+    Land - Anzahl pro Genre
+          (Gibt es mehr deutsche Krimis als französische?)
+    land - Schauspieler
+          (Sind in jedem Land verschiedene Schauspieler beliebt?)
     Land - Sprache 
           (zB Finnland soll keine Synchros machen)
 
-Achtung: Sprache evtl nicht vertrauenswürig
+Achtung: Sprache evtl. nicht vertrauenswürdig
 
-zB hypothesentest: ich glaube, deutschland schaut viele krimis, und
-Finnland hat keine übersetzungen
+zB Hypothesentest: ich glaube, Deutschland schaut viele Krimis, und
+Finnland hat keine Übersetzungen
 
 Schätzer für Varianz, Erwartungswert
 
@@ -131,10 +168,10 @@ data %>%
 
 ![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-3-1.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-3-2.png)
 
-plots zu country und genere
+Plots zu country und genere
 
 ``` r
-# vektoren mit zeilennamen zum einfacherern kopieren
+# vektoren mit zeilennamen zum einfacheren Kopieren
 # c(colnames(data))
 
 columns_data = c("Title", "Genre", "Tags", "Languages", "Series or Movie", "Hidden Gem Score", "Country Availability", "Runtime", "Director", "Writer", "Actors", "View Rating", "IMDb Score", "Rotten Tomatoes Score", "Metacritic Score", "Awards Received", "Awards Nominated For", "Boxoffice", "Release Date", "Netflix Release Date", "Production House", "Netflix Link", "IMDb Link", "Summary", "IMDb Votes", "Image", "Poster", "TMDb Trailer", "Trailer Site")
@@ -157,7 +194,7 @@ sort_by_country <- data%>%
 #-------------------------------------------------------
 
 
-# weltweit durchgezählit: wie groß ist der anteil an Horror, Drama, ... von allen medien auf Netflix?
+# weltweit durchgezählt: wie groß ist der Anteil an Horror, Drama, ... von allen Medien auf Netflix?
 weltweit = data%>%
   separate_rows(Genre, sep = ", ")%>%
   count(Genre)%>%
@@ -184,7 +221,7 @@ for(i in columns_countries){
 specific_country <- sort_by_country%>%
   select(Genre, i)%>%
   drop_na()%>%
-  mutate("prozent" = !!as.symbol(i)/sum(!!as.symbol(i)))# ich rufe die gewünschte Spalte auf, obwohl ich nur einen Stig zur verfügung habe
+  mutate("prozent" = !!as.symbol(i)/sum(!!as.symbol(i)))# ich rufe die gewünschte Spalte auf, obwohl ich nur einen Stig zur Verfügung habe
 
 
 #reorder(Genre, prozent)
@@ -213,12 +250,12 @@ beobachtungen:
 
 -   documentary, realyty tv und shorts sind ausreißer
 
--> Warscheinlich existieren insgesamt wenige Dokumentationen und
-Shortss, die dafür aber in viel mehr ländern verfügbar sind damit fallen
-sie Insgesamt nicht ins gewicht, in einem land prozentual aber schon
+-> Warscheinlich existieren insgesamt wenige Dokumentationen und Shorts,
+die dafür aber in viel mehr Ländern verfügbar sind damit fallen sie
+insgesamt nicht ins Gewicht, in einem land prozentual aber schon
 
-insgesamt gibts etwa 6 - mal so viele Dramen wie Documentaries, aber in
-den einzelnen ländern sind es nurnoch etwa 3mal so viele
+insgesamt gibt es etwa 6-mal so viele Dramen wie Documentaries, aber in
+den einzelnen Ländern sind es nur noch etwa 3-mal so viele
 
 ``` r
 columns_generes = c("Action", "Adult", "Adventure", "Animation", "Biography", "Comedy", "Crime", "Documentary", "Drama", "Family", "Fantasy", "Film-Noir", "Game-Show", "History", "Horror", "Music", "Musical", "Mystery", "News", "Reality-TV", "Romance", "Sci-Fi", "Short", "Sport", "Talk-Show", "Thriller", "War", "Western")
@@ -288,19 +325,19 @@ data%>%
     ## 1 Documentary  1030
     ## 2 Drama        6359
 
--   es scheinen sich eher die unbeliebteren genres zu vertauschen
+-   es scheinen sich eher die unbeliebteren Genres zu vertauschen
 
--   deutschland ist voll im Durchschnitt und damit langweilig
+-   Deutschland ist voll im Durchschnitt und damit langweilig
 
--   halbwegs interessant finde ich: Japan, United States, south africa,
-    mexico, lithuania, columbia (mehr oder weniger willkürliche wahl,)
+-   halbwegs interessant finde ich: Japan, United States, South Africa,
+    Mexico, Lithuania, Columbia (mehr oder weniger willkürliche Wahl)
 
 -   Show/ Filme unterscheiden (in wievielen Sprachen sind diese
-    verüügbar?)
+    verfügbar?)
 
-evtl wiederverwertbare codeschnipsel
+evtl. wiederverwertbare Codeschnipsel
 
-## Genre vs. Year
+Genre vs. Year
 
 ``` r
 genre_year <- data %>%
@@ -356,3 +393,12 @@ data %>% drop_na() %>%
 
 Hypothese: Netflix bietet bei neueren Filmen mehr Genres an, mit
 linearem Zusammenhang.
+
+## Literatur
+
+\[1\] Statista Research Department (2021). *Netflix: Daten und Fakten
+zur Erfolgsgeschichte des Streaming-Riesen*.
+<https://de.statista.com/themen/1840/netflix/>
+
+\[2\] Netlix. *Where ist Netflix available?.*
+<https://help.netflix.com/en/node/14164>
