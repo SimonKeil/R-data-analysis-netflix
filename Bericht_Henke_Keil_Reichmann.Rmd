@@ -14,6 +14,11 @@ knitr::opts_chunk$set(
 )
 ```
 
+## Einleitung
+
+Als 1997 ein kleine Online-Videothek für DVDs in Kalifornien gegründet wurde, war niemanden klar, wie dieses Unternehmen die Welt verändern würde. Jetzt, knapp 25 Jahre später, ist Netflix der größte Video-on-Demand-Anbieter der Welt mit knapp 200 Millionen Abonnenten [1]. Der Streaming-Riese ist heute in mehr als 190 Ländern verfügbar und hat tausende Inhalte in verschieden Sprachen [2].
+Doch Netflix ist nicht gleich Netflix: Netflix ist regional aufgrund von unterschiedlichen Lizenzvereinbarungen und kultureller Unterschiede zum Teil sehr unterschiedlich. Was man auf Netflix Deutschland gucken kann, muss nicht bei Netflix USA verfügbar sein. Dies wollen wir im folgenden Bericht genauer untersuchen und diese Unterschiede herausarbeiten. Denn wir wollen herausfinden: __Welches Land hat das beste Netflix?__
+
 Die Daten sind von
 https://www.kaggle.com/ashishgup/netflix-rotten-tomatoes-metacritic-imdb
 
@@ -337,3 +342,11 @@ data %>% drop_na() %>%
 ```
 
 Hypothese: Netflix bietet bei neueren Filmen mehr Genres an, mit linearem Zusammenhang.
+
+
+
+
+## Literatur
+[1] Statista Research Department (2021). _Netflix: Daten und Fakten zur Erfolgsgeschichte des Streaming-Riesen_. https://de.statista.com/themen/1840/netflix/
+
+[2] Netlix. _Where ist Netflix available?._ https://help.netflix.com/en/node/14164
