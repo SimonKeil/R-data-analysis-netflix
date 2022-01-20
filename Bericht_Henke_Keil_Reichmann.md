@@ -28,7 +28,7 @@ Quellen zusammengetragen. Zudem hat er eine eigene Metrik, den “Hidden
 Gem Score”, hinzugefügt, der aus den Daten Geheimtipps ermitteln soll.
 Diesen haben wir aber für unsere Betrachungen nicht beachtet.
 
-Aufgrund der Hetereogenität der Daten sind manche Variablen
+Aufgrund der Heterogenität der Daten sind manche Variablen
 vertrauenswürdiger als andere. Zum Teil scheinen die Sprachen nicht
 akurat zu sein, auch Sprachen wie “Latin” werden genannt, die wir in
 keinem Film auf Netflix finden konnten. Wir vermuten Übersetzungsfehler,
@@ -98,7 +98,7 @@ title_country%>%
   ggplot(aes(x = n, y = reorder(country, n), colour = n))+
   geom_point()+
   labs(title = "Anzahl verfügbarer Filme in verschiedenen Ländern",
-       x = "Anhahl der Filme", 
+       x = "Anzahl der Filme", 
        y = " ")
 
 
@@ -337,6 +337,37 @@ data%>%
 -   Show/ Filme unterscheiden (in wievielen Sprachen sind diese
     verfügbar?)
 
+**Untersuchung Internationalität vs. Netflix Release**
+
+``` r
+countriesPerFilm <- data %>%
+  separate_rows(`Country Availability`, sep = ",") %>%
+  mutate(releaseYear = as.integer(substr(`Netflix Release Date`, 1, 4))) %>% 
+  select(`Country Availability`, releaseYear, Title) %>% 
+  drop_na() %>%
+  count(Title, releaseYear) %>%
+  group_by(releaseYear) %>% 
+  summarise(number = mean(n))
+  
+  totalFilmsPerYear <- data %>%
+  mutate(releaseYear = as.integer(substr(`Netflix Release Date`, 1, 4))) %>% 
+  select(releaseYear, Title) %>% 
+  drop_na() %>%
+  count(Title, releaseYear) %>%
+    group_by(releaseYear) %>%
+    summarise(n=sum(n))
+  
+  #NOCH UNFERTIG
+  
+  ggplot(data=countriesPerFilm, aes(x = releaseYear, y = number)) +
+  geom_point() +
+  labs(title = "Länder pro Film im zeitlichen Verlauf",
+       y = "Durchschnittliche Zahl der Länder pro Film",
+       x = "Jahr")
+```
+
+![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+
 evtl. wiederverwertbare Codeschnipsel
 
 ## Genre vs. Year
@@ -362,7 +393,7 @@ left_join(year_per_genre, year_genre_total, by = "year") %>%
   ggplot(aes(x = year, y = prop, color = Genre)) + geom_point()
 ```
 
-![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
 Trotz (nzw. sogar wegen) des Overplotting sehen wir klar: Mit
 zunehmender Jahreszahl gibt es mehr Genres und die einzelnen Genres
@@ -390,7 +421,7 @@ temp %>%
 #summary(lm)
 ```
 
-![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
 Allerdings wird in unserem Datensatz ein Film i.d.R. mehreren Genres
 zugeordnet. Liegt der Zusammenhang also eventuell daran, dass neuere
@@ -415,7 +446,7 @@ data %>%
        x = "Jahr")
 ```
 
-![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 Anhand des Plots lässt sich diese Vermutung widerlegen, denn die Zahl
 der Genres ist fast immer zwischen 2.5 und .5, lediglich vor 1980 sieht

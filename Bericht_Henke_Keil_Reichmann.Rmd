@@ -24,7 +24,7 @@ Doch Netflix ist nicht gleich Netflix: Netflix ist regional aufgrund von untersc
 
 Hierzu haben wir Daten von Kaggle, genauer gesagt von Ashish Gupta, unter https://www.kaggle.com/ashishgup/netflix-rotten-tomatoes-metacritic-imdb. Da es keine offizielle Netflix API gibt, wurden hier Daten von mehreren verschiedenen APIs und Seiten wie "Rotten Tomatoes", "iMDB" und weiteren Quellen zusammengetragen. Zudem hat er eine eigene Metrik, den "Hidden Gem Score", hinzugefügt, der aus den Daten Geheimtipps ermitteln soll. Diesen haben wir aber für unsere Betrachungen nicht beachtet.
 
-Aufgrund der Hetereogenität der Daten sind manche Variablen vertrauenswürdiger als andere. Zum Teil scheinen die Sprachen nicht akurat zu sein, auch Sprachen wie "Latin" werden genannt, die wir in keinem Film auf Netflix finden konnten. Wir vermuten Übersetzungsfehler, können aber den Fehlerursprung nicht eindeutig ermitteln. Zum Teil sind auch bei Zusammenfügen der Daten aus verschiedenen Quellen Fehler aufgetreten. So ist bei der Serie "Barberen??????" die Netflix-Serie deutscher Herkunft mit dem iMDB-Eintrag tschechischen Film ???? aus 20?? verbunden wurden. So sind die Daten zum Teil von der Serie, zum Teil vom Film.
+Aufgrund der Heterogenität der Daten sind manche Variablen vertrauenswürdiger als andere. Zum Teil scheinen die Sprachen nicht akurat zu sein, auch Sprachen wie "Latin" werden genannt, die wir in keinem Film auf Netflix finden konnten. Wir vermuten Übersetzungsfehler, können aber den Fehlerursprung nicht eindeutig ermitteln. Zum Teil sind auch bei Zusammenfügen der Daten aus verschiedenen Quellen Fehler aufgetreten. So ist bei der Serie "Barberen??????" die Netflix-Serie deutscher Herkunft mit dem iMDB-Eintrag tschechischen Film ???? aus 20?? verbunden wurden. So sind die Daten zum Teil von der Serie, zum Teil vom Film.
 
 Da dies aber (nach unserem Wissen) Einzelfälle sind und es zu diesem Thema kaum bis keine besseren Daten gibt, haben wir trotz dieser Probleme dieses Datenset verwendet.
 
@@ -83,7 +83,7 @@ title_country%>%
   ggplot(aes(x = n, y = reorder(country, n), colour = n))+
   geom_point()+
   labs(title = "Anzahl verfügbarer Filme in verschiedenen Ländern",
-       x = "Anhahl der Filme", 
+       x = "Anzahl der Filme", 
        y = " ")
 
 
@@ -271,7 +271,33 @@ data%>%
 
 - Show/ Filme unterscheiden (in wievielen Sprachen sind diese verfügbar?)
 
-
+__Untersuchung Internationalität vs. Netflix Release__
+```{r}
+countriesPerFilm <- data %>%
+  separate_rows(`Country Availability`, sep = ",") %>%
+  mutate(releaseYear = as.integer(substr(`Netflix Release Date`, 1, 4))) %>% 
+  select(`Country Availability`, releaseYear, Title) %>% 
+  drop_na() %>%
+  count(Title, releaseYear) %>%
+  group_by(releaseYear) %>% 
+  summarise(number = mean(n))
+  
+  totalFilmsPerYear <- data %>%
+  mutate(releaseYear = as.integer(substr(`Netflix Release Date`, 1, 4))) %>% 
+  select(releaseYear, Title) %>% 
+  drop_na() %>%
+  count(Title, releaseYear) %>%
+    group_by(releaseYear) %>%
+    summarise(n=sum(n))
+  
+  #NOCH UNFERTIG
+  
+  ggplot(data=countriesPerFilm, aes(x = releaseYear, y = number)) +
+  geom_point() +
+  labs(title = "Länder pro Film im zeitlichen Verlauf",
+       y = "Durchschnittliche Zahl der Länder pro Film",
+       x = "Jahr")
+```
 
 
 
