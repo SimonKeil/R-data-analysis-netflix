@@ -337,37 +337,6 @@ data%>%
 -   Show/ Filme unterscheiden (in wievielen Sprachen sind diese
     verfügbar?)
 
-**Untersuchung Internationalität vs. Netflix Release**
-
-``` r
-countriesPerFilm <- data %>%
-  separate_rows(`Country Availability`, sep = ",") %>%
-  mutate(releaseYear = as.integer(substr(`Netflix Release Date`, 1, 4))) %>% 
-  select(`Country Availability`, releaseYear, Title) %>% 
-  drop_na() %>%
-  count(Title, releaseYear) %>%
-  group_by(releaseYear) %>% 
-  summarise(number = mean(n))
-  
-  totalFilmsPerYear <- data %>%
-  mutate(releaseYear = as.integer(substr(`Netflix Release Date`, 1, 4))) %>% 
-  select(releaseYear, Title) %>% 
-  drop_na() %>%
-  count(Title, releaseYear) %>%
-    group_by(releaseYear) %>%
-    summarise(n=sum(n))
-  
-  #NOCH UNFERTIG
-  
-  ggplot(data=countriesPerFilm, aes(x = releaseYear, y = number)) +
-  geom_point() +
-  labs(title = "Länder pro Film im zeitlichen Verlauf",
-       y = "Durchschnittliche Zahl der Länder pro Film",
-       x = "Jahr")
-```
-
-![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
-
 evtl. wiederverwertbare Codeschnipsel
 
 ## Genre vs. Year
@@ -393,7 +362,7 @@ left_join(year_per_genre, year_genre_total, by = "year") %>%
   ggplot(aes(x = year, y = prop, color = Genre)) + geom_point()
 ```
 
-![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 Trotz (nzw. sogar wegen) des Overplotting sehen wir klar: Mit
 zunehmender Jahreszahl gibt es mehr Genres und die einzelnen Genres
@@ -421,7 +390,7 @@ temp %>%
 #summary(lm)
 ```
 
-![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
 Allerdings wird in unserem Datensatz ein Film i.d.R. mehreren Genres
 zugeordnet. Liegt der Zusammenhang also eventuell daran, dass neuere
@@ -446,7 +415,7 @@ data %>%
        x = "Jahr")
 ```
 
-![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
 Anhand des Plots lässt sich diese Vermutung widerlegen, denn die Zahl
 der Genres ist fast immer zwischen 2.5 und .5, lediglich vor 1980 sieht
@@ -463,6 +432,101 @@ einzubeziehen ist natürlich auch möglich.
 
 Als überspannende Fragestellung ergibt sich hieraus zum Beispiel: Bietet
 Netflix mit neuen Filmen mehr Abwechslung?
+
+**Untersuchung Internationalität vs. Veröffentlichungsjahr**
+
+*Ebenfalls spannend, evtl. als erweiterung zu Simons Idee (\~Daniel)*
+
+Netflix wird immer internationaler und hat mehr und mehr
+Eigenproduktionen. Führt das auf lange Sicht auf ein einheitlicheres
+Netflix, das weniger regionale Unterschiede hat? Sind die neusten
+Veröffentlichungen auf Netflix in mehr Ländern verfügbar?
+
+Zunächst schauen wir uns die Film basierend auf ihr ursprüngliches
+Veröffentlichungsjahr an, wobei wir ähnlich wie oben nur Filme zwischen
+1960 und 2021 betrachten. Hier sehen wir eine interessante Kurve,
+insbesondere wenn wir die in R eingebaute, automatische Glättungskurve
+einbauen.
+
+``` r
+countriesPerYear <- data %>%
+  separate_rows(`Country Availability`, sep = ",") %>%
+  mutate(year = as.integer(substr(`Release Date`, 8, 12))) %>%  
+  select(`Country Availability`, year, Title) %>% 
+  drop_na() %>%
+  filter(year > 1959 & year < 2021) %>% 
+  count(Title, year) %>%
+  group_by(year) %>% 
+  summarise(number = mean(n)) 
+
+
+
+countriesPerYear%>%
+  ggplot(aes(x = year, y = number)) +
+  geom_point() +
+  labs(title = "Länder pro Film im zeitlichen Verlauf",
+       y = "Durchschnittliche Zahl der Länder pro Film",
+       x = "Veröffentlichungsjahr des Films")
+
+countriesPerYear%>%
+  ggplot(aes(x = year, y = number)) +
+  geom_point() +
+  geom_smooth()+
+  labs(title = "Länder pro Film im zeitlichen Verlauf",
+       y = "Durchschnittliche Zahl der Länder pro Film",
+       x = "Veröffentlichungsjahr des Films")
+```
+
+![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-10-1.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-10-2.png)
+
+Interessanterweise sieht man diesen Trend nicht so deutlich, wenn man
+das Veröffentlichungsjahr auf Netflix betrachtet, da die Zahlen seit
+2018 rückläufig sind.
+
+``` r
+data %>%
+  separate_rows(`Country Availability`, sep = ",") %>%
+  mutate(releaseYear = as.integer(substr(`Netflix Release Date`, 1, 4))) %>% 
+  select(`Country Availability`, releaseYear, Title) %>% 
+  drop_na() %>%
+  filter(releaseYear > 1959 & releaseYear < 2021) %>%
+  count(Title, releaseYear) %>%
+  group_by(releaseYear) %>% 
+  summarise(number = mean(n)) %>%
+  ggplot(aes(x = releaseYear, y = number)) +
+  geom_col() +
+  labs(title = "Länder pro Film im zeitlichen Verlauf",
+       y = "Durchschnittliche Zahl der Länder pro Film",
+       x = "Veröffentlichungsjahr auf Netflix")
+```
+
+![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+
+Dieser Trend ist überraschend, vor allem im Vergleich zu den
+Veröffentlichungszahlen von Filmen auf Netflix
+
+``` r
+  data %>%
+  mutate(releaseYear = as.integer(substr(`Netflix Release Date`, 1, 4))) %>% 
+  select(releaseYear, Title) %>% 
+  drop_na() %>% 
+  filter(releaseYear > 1959 & releaseYear < 2021) %>%
+  ggplot(mapping = aes(x = releaseYear)) +
+  geom_bar() +
+  labs(title = "Veröffentlichungszahlen pro Jahr auf Netflix",
+       y = "Anzahl",
+       x = "Veröffentlichungsjahr auf Netflix")
+```
+
+![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+
+Das lässt darauf schließen: neue Werke sind auf Netflix internationaler
+erhältlich als alte Werke, das Veröffentlichungsdatum auf Netflix spielt
+höchstwahrscheinlich keine große Rolle.
+
+=> Ideen zu betrachten: Erwartungswert Verfügbarkeit, Korrelationen
+zwischen Verfügbarkeit, Netflix Release und ursprünglicher Release,
+Modell zum Verlauf entwickeln…
 
 ## Literatur
 
