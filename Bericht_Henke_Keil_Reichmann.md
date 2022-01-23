@@ -2,6 +2,44 @@ R-Projekt
 ================
 Márk Reichmann, Simon Keil, Daniel Henke
 
+Fragestunde: reicht eine Regression?
+
+*Netflix im zeitlichen Verlauf*
+
+-   Einleitung:
+
+    -   wie verändert sich das neuere vs ältere material aus Netflix?
+        (release year, not Neflix release Year!) (Daniel)
+
+-   Explorativ:
+
+    -   Datenbasis umstellen:
+        -   wir betrachten nur spalten ohne NA werte
+        -   varaiblen: titel, release_date, Genre(getrennt),
+            land(getrennt)
+    -   anzahl Filme pro Land (balkendiagramm/blaue punkte ?)
+    -   länder pro film im zeitlichen Verlauf(Daniel)
+    -   genre (Márk)
+    -   release Year vs genre Genres (Márk)
+    -   Jahr vs Anzahl Genre (verfügbar auf Netflix)(Márk)
+    -   Jahr vs Anzahl Genre (pro film) (neueren Filme nicht vielen
+        Genren zugeordnet) (Márk)
+
+-   Methoden
+
+    -   lineare regression, was ist das? (Simon)
+    -   falls in 4. was besonderes, dann noch ergänzen
+    -   pure exzellenz: lineare regression wird durch least squares
+        bestimmt (vgl Bornemann, literatur :))
+
+-   Analyse
+
+    -   y-achsenabschnitt relativ witzloß (Simon)
+    -   lineare regression (mit residuen, koeffizienten(pro jahr wie
+        viele genres durchschnittlich)) \[macht der computer\]
+    -   beschreibung, was wir sehen
+    -   kritisch hinterfragen, ob netflix spezifisch (Daniel)
+
 ## Einleitung
 
 Als 1997 ein kleine Online-Videothek für DVDs in Kalifornien gegründet
@@ -48,44 +86,6 @@ Daten einlesen:
 library("tidyverse")
 data <- read_csv("Data/netflix-rotten-tomatoes-metacritic-imdb.csv")
 ```
-
-bisherige Fragestellungen:
-
-*Netflix im zeitlichen Verlauf* - wichtige Variablen: Zeit/ Genre
-
--   Einleitung:
-
-    -   wie verändert sich das neuere vs ältere material aus Netflix?
-        (release year, not Neflix release Year!) (Daniel)
-
--   Explorativ:
-
-    -   Datenbasis umstellen:
-        -   wir betrachten nur spalten ohne NA werte
-        -   varaiblen: titel, release_date, Genre(getrennt),
-            land(getrennt)
-    -   anzahl Filme pro Land (balkendiagramm/blaue punkte ?)
-    -   länder pro film im zeitlichen Verlauf(Daniel)
-    -   genre (Márk)
-    -   release Year vs genre Genres (Simon)
-    -   Jahr vs Anzahl Genre (verfügbar auf Netflix)(Simon)
-    -   Jahr vs Anzahl Genre (pro film) (neueren Filme nicht vielen
-        Genren zugeordnet) (Simon)
-
--   Methoden
-
-    -   lineare regression, was ist das?
-    -   y-achsenabschnitt relativ witzloß
-    -   falls in 4. was besonderes, dann noch ergänzen
-    -   pure exzellenz: lineare regression wird durch least squares
-        bestimmt (vgl Bornemann, literatur :))
-
--   Analyse
-
-    -   lineare regression (mit residuen, koeffizienten(pro jahr wie
-        viele genres durchschnittlich)) \[mach der computer\]
-    -   beschreibung, was wir sehen
-    -   kritisch hinterfragen, ob netflix spezifisch
 
 ## Explorative Datenanalyse
 
