@@ -1,7 +1,6 @@
 R-Projekt
 ================
 Márk Reichmann, Simon Keil, Daniel Henke
-6 1 2022
 
 ## Einleitung
 
@@ -52,27 +51,41 @@ data <- read_csv("Data/netflix-rotten-tomatoes-metacritic-imdb.csv")
 
 bisherige Fragestellungen:
 
-*Welches Land hat das beste Netflix?*
+*Netflix im zeitlichen Verlauf* - wichtige Variablen: Zeit/ Genre
 
-filme/Serien getrennt
+-   Einleitung:
 
-    Land - einnahmen
-          (in welchem Land verdient Netflix am meisten?)
-    Sprache - Bewertungen 
-          (in welcher Sprache gibt es den höchsten Prozentsatz "guter" Filme?)
-    Land - Anzahl pro Genre
-          (Gibt es mehr deutsche Krimis als französische?)
-    land - Schauspieler
-          (Sind in jedem Land verschiedene Schauspieler beliebt?)
-    Land - Sprache 
-          (zB Finnland soll keine Synchros machen)
+    -   wie verändert sich das neuere vs ältere material aus Netflix?
+        (release year, not Neflix release Year!) (Daniel)
 
-Achtung: Sprache evtl. nicht vertrauenswürdig
+-   Explorativ:
 
-zB Hypothesentest: ich glaube, Deutschland schaut viele Krimis, und
-Finnland hat keine Übersetzungen
+    -   Datenbasis umstellen:
+        -   wir betrachten nur spalten ohne NA werte
+        -   varaiblen: titel, release_date, Genre(getrennt),
+            land(getrennt)
+    -   anzahl Filme pro Land (balkendiagramm/blaue punkte ?)
+    -   länder pro film im zeitlichen Verlauf(Daniel)
+    -   genre (Márk)
+    -   release Year vs genre Genres (Simon)
+    -   Jahr vs Anzahl Genre (verfügbar auf Netflix)(Simon)
+    -   Jahr vs Anzahl Genre (pro film) (neueren Filme nicht vielen
+        Genren zugeordnet) (Simon)
 
-Schätzer für Varianz, Erwartungswert
+-   Methoden
+
+    -   lineare regression, was ist das?
+    -   y-achsenabschnitt relativ witzloß
+    -   falls in 4. was besonderes, dann noch ergänzen
+    -   pure exzellenz: lineare regression wird durch least squares
+        bestimmt (vgl Bornemann, literatur :))
+
+-   Analyse
+
+    -   lineare regression (mit residuen, koeffizienten(pro jahr wie
+        viele genres durchschnittlich)) \[mach der computer\]
+    -   beschreibung, was wir sehen
+    -   kritisch hinterfragen, ob netflix spezifisch
 
 ## Explorative Datenanalyse
 
@@ -534,5 +547,5 @@ Modell zum Verlauf entwickeln…
 zur Erfolgsgeschichte des Streaming-Riesen*.
 <https://de.statista.com/themen/1840/netflix/>
 
-\[2\] Netlix. *Where ist Netflix available?.*
+\[2\] Netflix. *Where ist Netflix available?.*
 <https://help.netflix.com/en/node/14164>

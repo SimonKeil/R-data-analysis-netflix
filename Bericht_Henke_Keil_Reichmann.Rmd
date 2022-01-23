@@ -38,27 +38,41 @@ data <- read_csv("Data/netflix-rotten-tomatoes-metacritic-imdb.csv")
 
 bisherige Fragestellungen:
 
-_Welches Land hat das beste Netflix?_
-
-filme/Serien getrennt
-
-    Land - einnahmen
-          (in welchem Land verdient Netflix am meisten?)
-    Sprache - Bewertungen 
-          (in welcher Sprache gibt es den höchsten Prozentsatz "guter" Filme?)
-    Land - Anzahl pro Genre
-          (Gibt es mehr deutsche Krimis als französische?)
-    land - Schauspieler
-          (Sind in jedem Land verschiedene Schauspieler beliebt?)
-    Land - Sprache 
-          (zB Finnland soll keine Synchros machen)
+_Netflix im zeitlichen Verlauf_
+- wichtige Variablen: Zeit/ Genre
     
-Achtung: Sprache evtl. nicht vertrauenswürdig
+    
+- Einleitung: 
 
+    - wie verändert sich das neuere vs ältere material aus Netflix? (release year, not Neflix release Year!) (Daniel)
+    
+    
+- Explorativ:
+    
+    - Datenbasis umstellen:
+        - wir betrachten nur spalten ohne NA werte
+        - varaiblen: titel, release_date, Genre(getrennt), land(getrennt)
+    
+    - anzahl Filme pro Land (balkendiagramm/blaue punkte ?)
+    - länder pro film im zeitlichen Verlauf(Daniel)
+    - genre (Márk)
+    - release Year vs genre Genres (Simon)
+    - Jahr vs Anzahl Genre (verfügbar auf Netflix)(Simon)
+    - Jahr vs Anzahl Genre (pro film) (neueren Filme nicht vielen Genren zugeordnet) (Simon)
 
-zB Hypothesentest: ich glaube, Deutschland schaut viele Krimis, und Finnland hat keine Übersetzungen
+- Methoden
+    
+    - lineare regression, was ist das?
+    - y-achsenabschnitt relativ witzloß
+    - falls in 4. was besonderes, dann noch ergänzen
+    - pure exzellenz: lineare regression wird durch least squares bestimmt (vgl Bornemann, literatur :))
 
-Schätzer für Varianz, Erwartungswert
+- Analyse
+    
+    - lineare regression (mit residuen, koeffizienten(pro jahr wie viele genres durchschnittlich)) [mach der computer]
+    - beschreibung, was wir sehen
+    - kritisch hinterfragen, ob netflix spezifisch
+
 
 ## Explorative Datenanalyse
 
@@ -469,4 +483,4 @@ Das lässt darauf schließen: neue Werke sind auf Netflix internationaler erhäl
 ## Literatur
 [1] Statista Research Department (2021). _Netflix: Daten und Fakten zur Erfolgsgeschichte des Streaming-Riesen_. https://de.statista.com/themen/1840/netflix/
 
-[2] Netlix. _Where ist Netflix available?._ https://help.netflix.com/en/node/14164
+[2] Netflix. _Where ist Netflix available?._ https://help.netflix.com/en/node/14164
