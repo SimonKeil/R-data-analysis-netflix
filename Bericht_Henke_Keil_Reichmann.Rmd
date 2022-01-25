@@ -64,314 +64,144 @@ Aufgrund der Heterogenität der Daten sind manche Variablen vertrauenswürdiger 
 Da dies aber (nach unserem Wissen) Einzelfälle sind und es zu diesem Thema kaum bis keine besseren Daten gibt, haben wir trotz dieser Probleme dieses Datenset verwendet.
 
 
-
-
-Daten einlesen:
-```{r, message=FALSE}
+```{r, message=FALSE, echo=FALSE}
 library("tidyverse")
-data <- read_csv("Data/netflix-rotten-tomatoes-metacritic-imdb.csv")
+raw_data <- read_csv("Data/netflix-rotten-tomatoes-metacritic-imdb.csv")
 ```
+
+```{r, echo=FALSE}
+# dataset to work with throughout the analysis
+data_basic <- raw_data %>% rename(country = 'Country Availability') %>% 
+  # reformat release date to only the year
+  mutate(year = as.integer(substr(`Release Date`, 8, 12))) %>% 
+  # exclude years with close to no entries
+  filter(year > 1965 & year < 2020) %>% 
+  select(Genre, year, Title, country) %>%
+  drop_na()
+
+# dataset with list of genres separated into individual rows
+data_genre <- data_basic %>% 
+  separate_rows(Genre, sep = ", ")
+
+# dataset with list of countries separated into individual rows
+data_country <- data_basic %>%
+  separate_rows(country, sep = ",")
+
+# dataset with list of genres and countries separated into individual rows
+data_expanded <- data_genre %>%
+  separate_rows(country, sep = ",")
+```
+
 
 ## Explorative Datenanalyse
 
-Zunächst schauen wir uns an, wieviele Filme und Serien es pro Land gibt und in wievielen Ländern Filme und Serien verfügbar sind. 
-```{r}
-title_country <- data%>%
-  select('Country Availability', Title) %>% 
-  rename(country = 'Country Availability') %>% 
-  separate_rows(country, sep = ",") %>% 
-  drop_na()
+*Anmerkung zu Beginn der Analyse:* Wir lesen vor der eigentlichen Auswertung die Daten ein und reduzieren sie auf den Grund-Datenbestand, den wir im Folgenden nutzen wollen: Die Spalten mit dem Titel, Genres, Veröffentlichungsdatum und Länder Verfügbarkeit. Dabei enfernen wir zudem alle Zeilen in denen Angaben fehlen sowie die Filme/Serien mit Veröffentlichungsdatum vor 1965 und nach 2020, da in diesen Jahren nur sehr wenige Einträge vorhanden sind, sodass keine sinvollen Aussagen getroffen werden können.
 
+Zunächst schauen wir uns ein paar allgemeine Zahlen zu unserem (aufgeräumten) Datensatz an. Wir beginnen mit einer statistischen Übersicht zu den Veröffentlichungsjahren:
+```{r, echo=FALSE}
+summary(data_basic$year)
+```
+Wir beobachten zum einen, dass nur noch Werte von 1961 bis 2019 im Datensatz sind (wie oben begründet) und zum anderen, dass sehr viele Filme aus den letzten Jahren stammen, allein 25% aus den Jahren 2017 bis 2019.
+Diese Beobachtung sieht man auch, wenn man die Zahl der Filme in dem jeweiligen Veröffentlichungsjahr darstellt. Da der Zusammenhang annährend exponentiell ist, ist die Anzahl im Plot mit einer logarithmischen Skala versehen.
+```{r, echo=FALSE}
+data_basic %>% 
+  count(year) %>% 
+  ggplot(aes(x = year, y = n)) +
+  geom_point() +
+  scale_y_log10() +
+  labs(x = "Veröffentlichungsjahr",
+    y = "Anzahl der Filme")
+```
 
-n_ger <- (title_country %>%
-            filter(country == "Germany") %>%
-            count())$n
+Nun schauen wir uns die Länder in unserem Datensatz etwas genauer an. Es gibt 
+```{r, echo=FALSE}
+(data_country %>% distinct(country) %>% count())$n
+```
+Länder in unserem Datensatz. Eine interessante Kenngröße ist, wieviele Filme und Serien es jeweils in den Ländern gibt.
 
-
-title_country%>%
+```{r, echo=FALSE}
+data_country %>%
   count(country)%>%
   select(n, country)%>%
-  ggplot(aes(x = n, y = reorder(country, n), colour = n))+
+  ggplot(aes(x = n, y = reorder(country, n)))+
   geom_point()+
-  labs(title = "Anzahl verfügbarer Filme in verschiedenen Ländern",
+  labs(title = "Anzahl verfügbarer Filme in den Ländern",
        x = "Anzahl der Filme", 
-       y = " ")
-
-
-title_country %>%
-  count(country) %>% 
-  ggplot(mapping = aes(x = n)) +
-  geom_histogram(bins = 10) +
-  annotate(geom = "vline",
-           x = n_ger,
-           xintercept = n_ger) +
-  annotate(geom = "text",
-           label = "Deutschland",
-           x = n_ger,
-           y = 5,
-           angle = -90,
-           vjust = -0.5) +
-  labs(title = "Anzahl Filme die pro Land verfügbar sind",
-       y = "ist in so vielen Ländern verfügbar",
-       x = "diese Anzahl Filme")
-
-
-title_country %>% 
-  count(Title) %>%
-  ggplot(mapping = aes(x = n)) +
-  geom_histogram(boundary = 0, bins = 95) +
-  labs(title = "wieviele Filme gibt es, die in genau X-vielen Ländern verfügbar sind?",
-       x = "Anzahl Länder",
-       y = "Anzahl Filme, die so oft verfügbar sind")
-
+       y = "Land")
 ```
 
-Nun untersuchen wir die Genres
-```{r}
-data %>% 
-  drop_na %>% 
-  select(Genre) %>%
-  separate_rows(Genre, sep = ", ") %>%
+Man sieht, dass es starke Unterschiede zwischen den einzelnen Ländern gibt und dass keine Gruppenbildung in z.B. Länder mit sehr viel und Ländern mit weniger Auswahl zu erkennen ist.
+
+__Untersuchung Internationalität vs. Veröffentlichungsjahr__
+
+_Ebenfalls spannend, evtl. als erweiterung zu Simons Idee (~Daniel)_
+
+Netflix wird immer internationaler und hat mehr und mehr Eigenproduktionen. Führt das auf lange Sicht auf ein einheitlicheres Netflix, das weniger regionale Unterschiede hat? Sind die neusten Veröffentlichungen auf Netflix in mehr Ländern verfügbar?
+
+
+Zunächst schauen wir uns die Film basierend auf ihr ursprüngliches Veröffentlichungsjahr an, wobei wir ähnlich wie oben nur Filme zwischen 1960 und 2021 betrachten. Hier sehen wir eine interessante Kurve, insbesondere wenn wir die in R eingebaute, automatische Glättungskurve einbauen.
+
+```{r, echo=FALSE}
+countriesPerYear <- data_country %>% 
+  count(Title, year) %>%
+  group_by(year) %>% 
+  summarise(number = mean(n)) 
+
+countriesPerYear%>%
+  ggplot(aes(x = year, y = number)) +
+  geom_point() +
+  geom_smooth()+
+  labs(title = "Länder pro Film im zeitlichen Verlauf",
+       y = "Durchschnittliche Zahl der Länder pro Film",
+       x = "Veröffentlichungsjahr des Films")
+```
+
+Zuletzt untersuchen wir noch die Genres
+```{r, echo=FALSE}
+data_genre %>%
   count(Genre) %>% 
-  arrange(desc(n)) %>% 
-  slice(1:10) %>% 
+  arrange(n) %>%
   ggplot(aes(x = factor(Genre, levels = Genre), y = n)) +
   geom_bar(stat = 'identity') +
-  labs(title = "Top 10 der Genre",
+  labs(title = "Ranking der Genres",
     x = "Genre",
-    y = "Anzahl") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))
-
-
-data %>% 
-  drop_na %>% 
-  rename(Country = 'Country Availability') %>% 
-  select(Genre, Country) %>%
-  separate_rows(Country, sep = ",") %>%
-  separate_rows(Genre, sep = ", ") %>%
-  filter(Country == 'Germany') %>% 
-  count(Genre) %>% 
-  arrange(desc(n)) %>% 
-  slice(1:10) %>% 
-  ggplot(aes(x = factor(Genre, levels = Genre), y = n)) +
-  geom_bar(stat = 'identity') +
-  labs(title = "Top 10 der Genre in Deutschland",
-    x = "Genre",
-    y = "Anzahl") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))
+    y = "Anzahl der Filme") +  coord_flip()
 ```
 
-
-Plots zu country und genre
-```{r, fig.show='hide'}
-# vektoren mit zeilennamen zum einfacheren Kopieren
-# c(colnames(data))
-
-columns_data = c("Title", "Genre", "Tags", "Languages", "Series or Movie", "Hidden Gem Score", "Country Availability", "Runtime", "Director", "Writer", "Actors", "View Rating", "IMDb Score", "Rotten Tomatoes Score", "Metacritic Score", "Awards Received", "Awards Nominated For", "Boxoffice", "Release Date", "Netflix Release Date", "Production House", "Netflix Link", "IMDb Link", "Summary", "IMDb Votes", "Image", "Poster", "TMDb Trailer", "Trailer Site")
-
-columns_countries = c("Argentina", "Australia", "Belgium", "Brazil", "Canada", "Colombia", "Czech Republic", "France", "Germany", "Greece", "Hong Kong", "Hungary", "Iceland", "India", "Israel", "Italy", "Japan", "Lithuania", "Malaysia", "Mexico", "Netherlands", "Poland", "Portugal", "Romania", "Russia", "Singapore", "Slovakia", "South Africa", "South Korea", "Spain", "Sweden", "Switzerland", "Thailand", "Turkey", "United Kingdom", "United States")
-
-#-------------------------------------------------------
-sort_by_country <- data%>%
-  select("Title", "Genre", "Country Availability")%>%
-  separate_rows(`Country Availability`, sep = ",")%>%
-  separate_rows(Genre, sep = ", ")%>%
-  count(Genre, `Country Availability`)%>%
-  spread(key = `Country Availability`, value = n)%>%
-  select(-"<NA>")%>% # ab hier bringe ich die NA werte in ordnung
-  filter(!is.na(Genre))%>%
-  replace(is.na(.), 0)
-#sort_by_country
-
-
-#-------------------------------------------------------
-
-
-# weltweit durchgezählt: wie groß ist der Anteil an Horror, Drama, ... von allen Medien auf Netflix?
-weltweit = data%>%
-  separate_rows(Genre, sep = ", ")%>%
-  count(Genre)%>%
-  drop_na()%>%
-  mutate("prozent" = n/sum(n))%>%
-  arrange(desc(prozent))
-#weltweit
-
-
-# Durchschnitt von:
-# wie groß ist Anteil an Horror, ... in einem speziellen Land?
-durchschnitt = sort_by_country%>%
-  mutate(n = rowSums(sort_by_country[ , columns_countries]))%>%#alle länder aufsummieren
-  select(Genre, n)%>%
-  drop_na()%>%
-  mutate(n = as.integer(n))%>% 
-  mutate("prozent" = n/sum(n))%>%
-  arrange(desc(prozent))
-#durchschnitt
-#---------------------
-
-for(i in columns_countries){
-  
-specific_country <- sort_by_country%>%
-  select(Genre, i)%>%
-  drop_na()%>%
-  mutate("prozent" = !!as.symbol(i)/sum(!!as.symbol(i)))# ich rufe die gewünschte Spalte auf, obwohl ich nur einen Stig zur Verfügung habe
-
-
-#reorder(Genre, prozent)
-my_plot = ggplot(NULL, aes(x = prozent, y = reorder(Genre, prozent))) +    # Draw ggplot2 plot based on two data frames
-  geom_col(data = durchschnitt) +
-  geom_point(data = specific_country, col = "orange")+
-  scale_x_continuous(limits = c(0, 0.2))+
-  labs(title = i,
-       x = "Genre/im Land verfügbar", 
-       y = " ")
-
-print(my_plot)
-}
-
-ggplot(NULL, aes(x = prozent, y = reorder(Genre, prozent))) +    # Draw ggplot2 plot based on two data frames
-  geom_col(data = weltweit) +
-  geom_point(data = durchschnitt, col = "orange")+
-  scale_x_continuous(limits = c(0, 0.2))+
-  labs(title = "weltweite Verteilung (bar)",
-       x = "durchschnittliche Verteilung pro land (orange)", 
-       y = " ")
-```
-beobachtungen: 
-
-- documentary, realyty tv und shorts sind ausreißer
-
--> Warscheinlich existieren insgesamt wenige Dokumentationen und Shorts, die dafür aber in viel mehr Ländern verfügbar sind
-damit fallen sie insgesamt nicht ins Gewicht, in einem land prozentual aber schon
-
-insgesamt gibt es etwa 6-mal so viele Dramen wie Documentaries, aber in den einzelnen Ländern sind es nur noch etwa 3-mal so viele
-
-```{r}
-
-columns_generes = c("Action", "Adult", "Adventure", "Animation", "Biography", "Comedy", "Crime", "Documentary", "Drama", "Family", "Fantasy", "Film-Noir", "Game-Show", "History", "Horror", "Music", "Musical", "Mystery", "News", "Reality-TV", "Romance", "Sci-Fi", "Short", "Sport", "Talk-Show", "Thriller", "War", "Western")
-
-sort_by_genre <- data%>%
-  select("Title", "Genre", "Country Availability")%>%
-  separate_rows(`Country Availability`, sep = ",")%>%
-  separate_rows(Genre, sep = ", ")%>%
-  count(Genre, `Country Availability`)%>%
-  spread(key = Genre, value = n)%>%
-  select(-"<NA>")%>% # ab hier bringe ich die NA werte in ordnung
-  filter(!is.na(`Country Availability`))%>%
-  replace(is.na(.), 0)
-sort_by_genre
-
-sort_by_genre%>%
-  select(`Country Availability`, Documentary, Drama)
-
-
-data%>%
-  select("Title", "Genre")%>%
-  separate_rows(Genre, sep = ", ")%>%
-  count(Genre)%>%
-  filter(Genre == "Documentary" | Genre == "Drama")
-
-```
-
-
-- es scheinen sich eher die unbeliebteren Genres zu vertauschen
-- Deutschland ist voll im Durchschnitt und damit langweilig
-
-- halbwegs interessant finde ich: Japan, United States, South Africa, Mexico, Lithuania, Columbia
-(mehr oder weniger willkürliche Wahl)
-
-- Show/ Filme unterscheiden (in wievielen Sprachen sind diese verfügbar?)
-
-
-
-
-
-
-
-
-
-evtl. wiederverwertbare Codeschnipsel
-```{r eval=FALSE, include=FALSE}
-sort_by_genre <- data%>%
-  select("Title", "Genre", "Country Availability")%>%
-  mutate(id = row_number())%>% # müssen eindeutig sein weil baum
-  mutate("Yes" = TRUE)%>%
-  separate_rows(Genre, sep = ", ")%>%
-  spread(key = Genre, value = Yes)%>%
-  select(Title, `Country Availability`, columns_generes)%>%
-  separate_rows(`Country Availability`, sep = ",")
-#sort_by_genre
-
-sort_by_country <- data%>%
-  select("Title", "Genre", "Country Availability")%>%
-  mutate(id = row_number())%>% # müssen eindeutig sein weil baum
-  mutate("Yes" = TRUE)%>% 
-  separate_rows(`Country Availability`, sep = ",")%>%
-  spread(key = `Country Availability`, value = Yes)%>%
-  select(Title, Genre, columns_countries)%>%
-  separate_rows(Genre, sep = ", ")
-sort_by_country
-
-
-specific_country <- sort_by_country%>%
-  filter(!!as.symbol(i) == TRUE)%>% # ich rufe die gewünschte Spalte auf, obwohl ich nur einen Stig zur verfügung habe
-  count(Genre)%>%
-  drop_na()%>%
-  mutate("prozent" = n/sum(n))
-#sum(specific_country$prozent)
-```
-
-## Genre vs. Year
-
-*Mein Vorschlag wäre hieran das Projekt aufzuziehen (~Simon)*
-
-Wir schauen uns an, welchen Anteil die Genres im Verlauf der Zeit haben. Weil von vor 1965 und aus 2020/21 kaum Filme auf Netflix sind, betrachten wir nur die Daten der Jahre 1965-2019:
-```{r}
-genre_year <- data %>%
-  separate_rows(Genre, sep = ", ") %>%
-  mutate(year = as.integer(substr(`Release Date`, 8, 12))) %>% 
-  filter(year >= 1965 & year < 2020) %>% 
-  select(Genre, year) %>%
-  drop_na()
-year_per_genre<- genre_year %>%
+und die Genres im zeitlichen Verlauf: 
+```{r, echo=FALSE}
+year_per_genre <- data_genre %>%
   count(year, Genre)
-year_genre_total <- genre_year %>% count(year)
+year_genre_total <- data_genre %>% count(year)
 left_join(year_per_genre, year_genre_total, by = "year") %>% 
   mutate(prop = n.x/n.y) %>% 
-  ggplot(aes(x = year, y = prop, color = Genre)) + geom_point()
+  ggplot(aes(x = year, y = prop, color = Genre)) +
+  geom_point() +
+  labs(title = "Anzahl der verfügbaren Genres nach Veröffentlichungsjahr",
+    x = "Veröffentlichungsjahr",
+    y = "Anzahl Genres")
 ```
 
-Trotz (nzw. sogar wegen) des Overplotting sehen wir klar: Mit zunehmender Jahreszahl gibt es mehr Genres und die einzelnen Genres tendieren dazu einen kleineren Anteil auszumachen, denn die Punkte liegen rechts unten im Plot am dichtesten. Zählen wir die Genres pro Jahr erhalten wir einen annährend linearen Zusammenhang:
+Trotz (bzw. sogar wegen) des Overplotting sehen wir klar: Mit zunehmender Jahreszahl gibt es mehr Genres und die einzelnen Genres tendieren dazu einen kleineren Anteil auszumachen, denn die Punkte liegen rechts unten im Plot am dichtesten. Zählen wir die Genres pro Jahr erhalten wir einen annährend linearen Zusammenhang:
 
-```{r}
-temp <- data %>%
-  separate_rows(Genre, sep = ", ") %>%
-  mutate(year = as.integer(substr(`Release Date`, 8, 12))) %>% 
+```{r, echo=FALSE}
+count_genre_vs_year <- data_genre %>%
   select(Genre, year) %>% 
-  drop_na() %>%
-  filter(year > 1960 & year < 2020) %>% 
   group_by(year) %>% 
   distinct() %>% 
   count(year)
-temp %>% 
+count_genre_vs_year %>%
   ggplot(aes(x = year, y = n)) +
   geom_point() +
-  geom_smooth(method = 'lm')
-
-#lm <- lm(temp$year ~ temp$n)
-#coef(lm)
-#summary(lm)
+  labs(title = "Anzahl der Genres in denen Filme verfügbar sind nach Veröffentlichungsjahr",
+       x = "Veröffentlichungsjahr",
+       y = "Anzahl der Genres")
 ```
 
 Allerdings wird in unserem Datensatz ein Film i.d.R. mehreren Genres zugeordnet. Liegt der Zusammenhang also eventuell daran, dass neuere Filme einfach mehr unterschiedlichen Genres zugeordnet werden? Um das zu beantworten plotten wir die durchschnittliche Zahl der Genres denen ein Film in einem gegebenen Jahr zugeordnet wird:
 
-```{r}
-data %>%
-  separate_rows(Genre, sep = ", ") %>%
-  mutate(year = as.integer(substr(`Release Date`, 8, 12))) %>% 
-  select(Genre, year, Title) %>% 
-  filter(year > 1960 & year < 2020) %>% 
-  drop_na() %>%
+```{r, echo=FALSE}
+data_genre %>%
   count(Title, year) %>%
   group_by(year) %>% 
   summarise(number = mean(n)) %>% 
@@ -383,99 +213,6 @@ data %>%
 ```
 
 Anhand des Plots lässt sich diese Vermutung widerlegen, denn die Zahl der Genres ist fast immer zwischen 2.5 und .5, lediglich vor 1980 sieht man etwas stärkere Schwankungen die vermutlich darauf zurückzuführen ist, dass in diesen Jahren die Zahl der Filme die verfügbar sind relativ klein ist. In den Filmen der letzten Jahre ist sogar eher ein Abwärtstrend erkennbar.
-
-An dieser Stelle ließe sich jetzt eine Analyse des linearen Modells anschließen, die beiden "Überflieger"-Genres Drama und Comedy, die sich etwas dem abfallenden Trend widersetzen könnte man näher beleuchten, man könnte länderspezifisch die Analyse fortsetzen. Andere Variablen mit einzubeziehen ist natürlich auch möglich.
-
-Als überspannende Fragestellung ergibt sich hieraus zum Beispiel: Bietet Netflix mit neuen Filmen mehr Abwechslung?
-
-
-
-
-
-__Untersuchung Internationalität vs. Veröffentlichungsjahr__
-
-_Ebenfalls spannend, evtl. als erweiterung zu Simons Idee (~Daniel)_
-
-Netflix wird immer internationaler und hat mehr und mehr Eigenproduktionen. Führt das auf lange Sicht auf ein einheitlicheres Netflix, das weniger regionale Unterschiede hat? Sind die neusten Veröffentlichungen auf Netflix in mehr Ländern verfügbar?
-
-
-Zunächst schauen wir uns die Film basierend auf ihr ursprüngliches Veröffentlichungsjahr an, wobei wir ähnlich wie oben nur Filme zwischen 1960 und 2021 betrachten. Hier sehen wir eine interessante Kurve, insbesondere wenn wir die in R eingebaute, automatische Glättungskurve einbauen.
-
-```{r}
-countriesPerYear <- data %>%
-  separate_rows(`Country Availability`, sep = ",") %>%
-  mutate(year = as.integer(substr(`Release Date`, 8, 12))) %>%  
-  select(`Country Availability`, year, Title) %>% 
-  drop_na() %>%
-  filter(year > 1959 & year < 2021) %>% 
-  count(Title, year) %>%
-  group_by(year) %>% 
-  summarise(number = mean(n)) 
-
-
-
-countriesPerYear%>%
-  ggplot(aes(x = year, y = number)) +
-  geom_point() +
-  labs(title = "Länder pro Film im zeitlichen Verlauf",
-       y = "Durchschnittliche Zahl der Länder pro Film",
-       x = "Veröffentlichungsjahr des Films")
-
-countriesPerYear%>%
-  ggplot(aes(x = year, y = number)) +
-  geom_point() +
-  geom_smooth()+
-  labs(title = "Länder pro Film im zeitlichen Verlauf",
-       y = "Durchschnittliche Zahl der Länder pro Film",
-       x = "Veröffentlichungsjahr des Films")
-```
- 
- 
- 
-Interessanterweise sieht man diesen Trend nicht so deutlich, wenn man das Veröffentlichungsjahr auf Netflix betrachtet, da die Zahlen seit 2018 rückläufig sind.
-
-```{r }
-data %>%
-  separate_rows(`Country Availability`, sep = ",") %>%
-  mutate(releaseYear = as.integer(substr(`Netflix Release Date`, 1, 4))) %>% 
-  select(`Country Availability`, releaseYear, Title) %>% 
-  drop_na() %>%
-  filter(releaseYear > 1959 & releaseYear < 2021) %>%
-  count(Title, releaseYear) %>%
-  group_by(releaseYear) %>% 
-  summarise(number = mean(n)) %>%
-  ggplot(aes(x = releaseYear, y = number)) +
-  geom_col() +
-  labs(title = "Länder pro Film im zeitlichen Verlauf",
-       y = "Durchschnittliche Zahl der Länder pro Film",
-       x = "Veröffentlichungsjahr auf Netflix")
-
-```
-
-
-Dieser Trend ist überraschend, vor allem im Vergleich zu den Veröffentlichungszahlen von Filmen auf Netflix
-```{r }
-
-  data %>%
-  mutate(releaseYear = as.integer(substr(`Netflix Release Date`, 1, 4))) %>% 
-  select(releaseYear, Title) %>% 
-  drop_na() %>% 
-  filter(releaseYear > 1959 & releaseYear < 2021) %>%
-  ggplot(mapping = aes(x = releaseYear)) +
-  geom_bar() +
-  labs(title = "Veröffentlichungszahlen pro Jahr auf Netflix",
-       y = "Anzahl",
-       x = "Veröffentlichungsjahr auf Netflix")
-  
-
-  
-  
-```
-
-
-Das lässt darauf schließen: neue Werke sind auf Netflix internationaler erhältlich als alte Werke, das Veröffentlichungsdatum auf Netflix spielt höchstwahrscheinlich keine große Rolle.
-
- => Ideen zu betrachten: Erwartungswert Verfügbarkeit, Korrelationen zwischen Verfügbarkeit, Netflix Release und ursprünglicher Release, Modell zum Verlauf entwickeln...
  
 
 ## Literatur
