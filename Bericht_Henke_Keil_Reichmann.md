@@ -80,277 +80,75 @@ Da dies aber (nach unserem Wissen) Einzelfälle sind und es zu diesem
 Thema kaum bis keine besseren Daten gibt, haben wir trotz dieser
 Probleme dieses Datenset verwendet.
 
-Daten einlesen:
+## Explorative Datenanalyse
+
+Zunächst einmal lesen wir die Daten ein, und bringen sie auf ein
+Brauchbares Format. Uns interessieren vor allem die Variablen “Title”,
+“Genre”, “Country Availability” und “Release Date”. Dabei teilen wir die
+Einträge in “Country Availability” und “Release Date” in mehrere Zeilen
+auf.
 
 ``` r
 library("tidyverse")
 data <- read_csv("Data/netflix-rotten-tomatoes-metacritic-imdb.csv")
-```
 
-## Explorative Datenanalyse
-
-Zunächst schauen wir uns an, wieviele Filme und Serien es pro Land gibt
-und in wievielen Ländern Filme und Serien verfügbar sind.
-
-``` r
-title_country <- data%>%
-  select('Country Availability', Title) %>% 
-  rename(country = 'Country Availability') %>% 
-  separate_rows(country, sep = ",") %>% 
-  drop_na()
-
-
-n_ger <- (title_country %>%
-            filter(country == "Germany") %>%
-            count())$n
-
-
-title_country%>%
-  count(country)%>%
-  select(n, country)%>%
-  ggplot(aes(x = n, y = reorder(country, n), colour = n))+
-  geom_point()+
-  labs(title = "Anzahl verfügbarer Filme in verschiedenen Ländern",
-       x = "Anzahl der Filme", 
-       y = " ")
-
-
-title_country %>%
-  count(country) %>% 
-  ggplot(mapping = aes(x = n)) +
-  geom_histogram(bins = 10) +
-  annotate(geom = "vline",
-           x = n_ger,
-           xintercept = n_ger) +
-  annotate(geom = "text",
-           label = "Deutschland",
-           x = n_ger,
-           y = 5,
-           angle = -90,
-           vjust = -0.5) +
-  labs(title = "Anzahl Filme die pro Land verfügbar sind",
-       y = "ist in so vielen Ländern verfügbar",
-       x = "diese Anzahl Filme")
-
-
-title_country %>% 
-  count(Title) %>%
-  ggplot(mapping = aes(x = n)) +
-  geom_histogram(boundary = 0, bins = 95) +
-  labs(title = "wieviele Filme gibt es, die in genau X-vielen Ländern verfügbar sind?",
-       x = "Anzahl Länder",
-       y = "Anzahl Filme, die so oft verfügbar sind")
-```
-
-![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-2-1.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-2-2.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-2-3.png)
-
-Nun untersuchen wir die Genres
-
-``` r
-data %>% 
-  drop_na %>% 
-  select(Genre) %>%
+data_films <- data %>%
+  select('Release Date', 'Title', 'Genre', 'Country Availability') %>%
+  rename(Release = 'Release Date', Country = 'Country Availability') %>% 
+  drop_na() %>%
+  arrange(Title) %>%
   separate_rows(Genre, sep = ", ") %>%
-  count(Genre) %>% 
-  arrange(desc(n)) %>% 
-  slice(1:10) %>% 
-  ggplot(aes(x = factor(Genre, levels = Genre), y = n)) +
-  geom_bar(stat = 'identity') +
-  labs(title = "Top 10 der Genre",
-    x = "Genre",
-    y = "Anzahl") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))
+  separate_rows(Country, sep = ",")
 
-
-data %>% 
-  drop_na %>% 
-  rename(Country = 'Country Availability') %>% 
-  select(Genre, Country) %>%
-  separate_rows(Country, sep = ",") %>%
-  separate_rows(Genre, sep = ", ") %>%
-  filter(Country == 'Germany') %>% 
-  count(Genre) %>% 
-  arrange(desc(n)) %>% 
-  slice(1:10) %>% 
-  ggplot(aes(x = factor(Genre, levels = Genre), y = n)) +
-  geom_bar(stat = 'identity') +
-  labs(title = "Top 10 der Genre in Deutschland",
-    x = "Genre",
-    y = "Anzahl") +
-  theme(axis.text.x = element_text(angle = 45, hjust=1))
+write.csv(data_films , file = "Data\\data_films.csv", row.names = FALSE)
 ```
 
-![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-3-1.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-3-2.png)
-
-Plots zu country und genre
+und jetzt können wir mit unseren Daten loslegen:
 
 ``` r
-# vektoren mit zeilennamen zum einfacheren Kopieren
-# c(colnames(data))
-
-columns_data = c("Title", "Genre", "Tags", "Languages", "Series or Movie", "Hidden Gem Score", "Country Availability", "Runtime", "Director", "Writer", "Actors", "View Rating", "IMDb Score", "Rotten Tomatoes Score", "Metacritic Score", "Awards Received", "Awards Nominated For", "Boxoffice", "Release Date", "Netflix Release Date", "Production House", "Netflix Link", "IMDb Link", "Summary", "IMDb Votes", "Image", "Poster", "TMDb Trailer", "Trailer Site")
-
-columns_countries = c("Argentina", "Australia", "Belgium", "Brazil", "Canada", "Colombia", "Czech Republic", "France", "Germany", "Greece", "Hong Kong", "Hungary", "Iceland", "India", "Israel", "Italy", "Japan", "Lithuania", "Malaysia", "Mexico", "Netherlands", "Poland", "Portugal", "Romania", "Russia", "Singapore", "Slovakia", "South Africa", "South Korea", "Spain", "Sweden", "Switzerland", "Thailand", "Turkey", "United Kingdom", "United States")
-
-#-------------------------------------------------------
-sort_by_country <- data%>%
-  select("Title", "Genre", "Country Availability")%>%
-  separate_rows(`Country Availability`, sep = ",")%>%
-  separate_rows(Genre, sep = ", ")%>%
-  count(Genre, `Country Availability`)%>%
-  spread(key = `Country Availability`, value = n)%>%
-  select(-"<NA>")%>% # ab hier bringe ich die NA werte in ordnung
-  filter(!is.na(Genre))%>%
-  replace(is.na(.), 0)
-#sort_by_country
-
-
-#-------------------------------------------------------
-
-
-# weltweit durchgezählt: wie groß ist der Anteil an Horror, Drama, ... von allen Medien auf Netflix?
-weltweit = data%>%
-  separate_rows(Genre, sep = ", ")%>%
-  count(Genre)%>%
-  drop_na()%>%
-  mutate("prozent" = n/sum(n))%>%
-  arrange(desc(prozent))
-#weltweit
-
-
-# Durchschnitt von:
-# wie groß ist Anteil an Horror, ... in einem speziellen Land?
-durchschnitt = sort_by_country%>%
-  mutate(n = rowSums(sort_by_country[ , columns_countries]))%>%#alle länder aufsummieren
-  select(Genre, n)%>%
-  drop_na()%>%
-  mutate(n = as.integer(n))%>% 
-  mutate("prozent" = n/sum(n))%>%
-  arrange(desc(prozent))
-#durchschnitt
-#---------------------
-
-for(i in columns_countries){
-  
-specific_country <- sort_by_country%>%
-  select(Genre, i)%>%
-  drop_na()%>%
-  mutate("prozent" = !!as.symbol(i)/sum(!!as.symbol(i)))# ich rufe die gewünschte Spalte auf, obwohl ich nur einen Stig zur Verfügung habe
-
-
-#reorder(Genre, prozent)
-my_plot = ggplot(NULL, aes(x = prozent, y = reorder(Genre, prozent))) +    # Draw ggplot2 plot based on two data frames
-  geom_col(data = durchschnitt) +
-  geom_point(data = specific_country, col = "orange")+
-  scale_x_continuous(limits = c(0, 0.2))+
-  labs(title = i,
-       x = "Genre/im Land verfügbar", 
-       y = " ")
-
-print(my_plot)
-}
+myData <- read_csv("Data/data_films.csv")
 ```
 
-``` r
-ggplot(NULL, aes(x = prozent, y = reorder(Genre, prozent))) +    # Draw ggplot2 plot based on two data frames
-  geom_col(data = weltweit) +
-  geom_point(data = durchschnitt, col = "orange")+
-  scale_x_continuous(limits = c(0, 0.2))+
-  labs(title = "weltweite Verteilung (bar)",
-       x = "durchschnittliche Verteilung pro land (orange)", 
-       y = " ")
-```
-
-beobachtungen:
-
--   documentary, realyty tv und shorts sind ausreißer
-
--> Warscheinlich existieren insgesamt wenige Dokumentationen und Shorts,
-die dafür aber in viel mehr Ländern verfügbar sind damit fallen sie
-insgesamt nicht ins Gewicht, in einem land prozentual aber schon
-
-insgesamt gibt es etwa 6-mal so viele Dramen wie Documentaries, aber in
-den einzelnen Ländern sind es nur noch etwa 3-mal so viele
-
-``` r
-columns_generes = c("Action", "Adult", "Adventure", "Animation", "Biography", "Comedy", "Crime", "Documentary", "Drama", "Family", "Fantasy", "Film-Noir", "Game-Show", "History", "Horror", "Music", "Musical", "Mystery", "News", "Reality-TV", "Romance", "Sci-Fi", "Short", "Sport", "Talk-Show", "Thriller", "War", "Western")
-
-sort_by_genre <- data%>%
-  select("Title", "Genre", "Country Availability")%>%
-  separate_rows(`Country Availability`, sep = ",")%>%
-  separate_rows(Genre, sep = ", ")%>%
-  count(Genre, `Country Availability`)%>%
-  spread(key = Genre, value = n)%>%
-  select(-"<NA>")%>% # ab hier bringe ich die NA werte in ordnung
-  filter(!is.na(`Country Availability`))%>%
-  replace(is.na(.), 0)
-sort_by_genre
-```
-
-    ## # A tibble: 36 x 29
-    ##    `Country Availabilit~ Action Adult Adventure Animation Biography Comedy Crime
-    ##    <chr>                  <int> <int>     <int>     <int>     <int>  <int> <int>
-    ##  1 Argentina                914     2       630       591       199   1793   674
-    ##  2 Australia                932     4       611       607       224   1993   731
-    ##  3 Belgium                  971     2       679       639       220   1919   742
-    ##  4 Brazil                   896     2       617       575       196   1724   658
-    ##  5 Canada                  1022     4       645       617       225   2008   765
-    ##  6 Colombia                 904     2       623       575       199   1577   672
-    ##  7 Czech Republic          1002     5       660       568       250   2129   765
-    ##  8 France                   886     2       624       652       202   1848   656
-    ##  9 Germany                  972     4       679       593       233   1949   719
-    ## 10 Greece                   851     3       549       503       192   1816   642
-    ## # ... with 26 more rows, and 21 more variables: Documentary <int>, Drama <int>,
-    ## #   Family <int>, Fantasy <int>, Film-Noir <int>, Game-Show <int>,
-    ## #   History <int>, Horror <int>, Music <int>, Musical <int>, Mystery <int>,
-    ## #   News <int>, Reality-TV <int>, Romance <int>, Sci-Fi <int>, Short <int>,
-    ## #   Sport <int>, Talk-Show <int>, Thriller <int>, War <int>, Western <int>
-
-``` r
-sort_by_genre%>%
-  select(`Country Availability`, Documentary, Drama)
-```
-
-    ## # A tibble: 36 x 3
-    ##    `Country Availability` Documentary Drama
-    ##    <chr>                        <int> <int>
-    ##  1 Argentina                      599  2068
-    ##  2 Australia                      644  2350
-    ##  3 Belgium                        586  2177
-    ##  4 Brazil                         591  2015
-    ##  5 Canada                         661  2405
-    ##  6 Colombia                       558  2056
-    ##  7 Czech Republic                 652  2534
-    ##  8 France                         577  2074
-    ##  9 Germany                        588  2229
-    ## 10 Greece                         600  2161
-    ## # ... with 26 more rows
-
-``` r
-data%>%
-  select("Title", "Genre")%>%
-  separate_rows(Genre, sep = ", ")%>%
-  count(Genre)%>%
-  filter(Genre == "Documentary" | Genre == "Drama")
-```
-
-    ## # A tibble: 2 x 2
-    ##   Genre           n
-    ##   <chr>       <int>
-    ## 1 Documentary  1030
-    ## 2 Drama        6359
-
--   es scheinen sich eher die unbeliebteren Genres zu vertauschen
-
--   Deutschland ist voll im Durchschnitt und damit langweilig
-
--   halbwegs interessant finde ich: Japan, United States, South Africa,
-    Mexico, Lithuania, Columbia (mehr oder weniger willkürliche Wahl)
-
--   Show/ Filme unterscheiden (in wievielen Sprachen sind diese
-    verfügbar?)
-
-evtl. wiederverwertbare Codeschnipsel
+|                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Zunächst schauen wir uns an, wieviele Filme und Serien es pro Land gibt und in wievielen Ländern Filme und Serien verfügbar sind.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| \`\`\`r title_country \<- data%>% select(‘Country Availability’, Title) %>% rename(country = ‘Country Availability’) %>% separate_rows(country, sep = “,”) %>% drop_na()                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| n_ger \<- (title_country %>% filter(country == “Germany”) %>% count())$n                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| title_country%>% count(country)%>% select(n, country)%>% ggplot(aes(x = n, y = reorder(country, n), colour = n))+ geom_point()+ labs(title = “Anzahl verfügbarer Filme in verschiedenen Ländern”, x = “Anzahl der Filme”, y = ” “)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| title_country %>% count(country) %>% ggplot(mapping = aes(x = n)) + geom_histogram(bins = 10) + annotate(geom = “vline”, x = n_ger, xintercept = n_ger) + annotate(geom = “text”, label = “Deutschland”, x = n_ger, y = 5, angle = -90, vjust = -0.5) + labs(title = “Anzahl Filme die pro Land verfügbar sind”, y = “ist in so vielen Ländern verfügbar”, x = “diese Anzahl Filme”)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| title_country %>% count(Title) %>% ggplot(mapping = aes(x = n)) + geom_histogram(boundary = 0, bins = 95) + labs(title = “wieviele Filme gibt es, die in genau X-vielen Ländern verfügbar sind?”, x = “Anzahl Länder”, y = “Anzahl Filme, die so oft verfügbar sind”) \`\`\`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| ![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-3-1.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-3-2.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-3-3.png)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| Nun untersuchen wir die Genres                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| \`\`\`r data %>% drop_na %>% select(Genre) %>% separate_rows(Genre, sep = “,”) %>% count(Genre) %>% arrange(desc(n)) %>% slice(1:10) %>% ggplot(aes(x = factor(Genre, levels = Genre), y = n)) + geom_bar(stat = ‘identity’) + labs(title = “Top 10 der Genre”, x = “Genre”, y = “Anzahl”) + theme(axis.text.x = element_text(angle = 45, hjust=1))                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| data %>% drop_na %>% rename(Country = ‘Country Availability’) %>% select(Genre, Country) %>% separate_rows(Country, sep = “,”) %>% separate_rows(Genre, sep = “,”) %>% filter(Country == ‘Germany’) %>% count(Genre) %>% arrange(desc(n)) %>% slice(1:10) %>% ggplot(aes(x = factor(Genre, levels = Genre), y = n)) + geom_bar(stat = ‘identity’) + labs(title = “Top 10 der Genre in Deutschland”, x = “Genre”, y = “Anzahl”) + theme(axis.text.x = element_text(angle = 45, hjust=1)) \`\`\`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-1.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-2.png)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| Plots zu country und genre                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| \`\`\`r # vektoren mit zeilennamen zum einfacheren Kopieren # c(colnames(data))                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| columns_data = c(“Title”, “Genre”, “Tags”, “Languages”, “Series or Movie”, “Hidden Gem Score”, “Country Availability”, “Runtime”, “Director”, “Writer”, “Actors”, “View Rating”, “IMDb Score”, “Rotten Tomatoes Score”, “Metacritic Score”, “Awards Received”, “Awards Nominated For”, “Boxoffice”, “Release Date”, “Netflix Release Date”, “Production House”, “Netflix Link”, “IMDb Link”, “Summary”, “IMDb Votes”, “Image”, “Poster”, “TMDb Trailer”, “Trailer Site”)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| columns_countries = c(“Argentina”, “Australia”, “Belgium”, “Brazil”, “Canada”, “Colombia”, “Czech Republic”, “France”, “Germany”, “Greece”, “Hong Kong”, “Hungary”, “Iceland”, “India”, “Israel”, “Italy”, “Japan”, “Lithuania”, “Malaysia”, “Mexico”, “Netherlands”, “Poland”, “Portugal”, “Romania”, “Russia”, “Singapore”, “Slovakia”, “South Africa”, “South Korea”, “Spain”, “Sweden”, “Switzerland”, “Thailand”, “Turkey”, “United Kingdom”, “United States”)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| #——————————————————- sort_by_country \<- data%>% select(“Title”, “Genre”, “Country Availability”)%>% separate_rows(`Country Availability`, sep = “,”)%>% separate_rows(Genre, sep = “,”)%>% count(Genre, `Country Availability`)%>% spread(key = `Country Availability`, value = n)%>% select(-“<NA>”)%>% # ab hier bringe ich die NA werte in ordnung filter(!is.na(Genre))%>% replace(is.na(.), 0) #sort_by_country                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| #——————————————————-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| # weltweit durchgezählt: wie groß ist der Anteil an Horror, Drama, … von allen Medien auf Netflix? weltweit = data%>% separate_rows(Genre, sep = “,”)%>% count(Genre)%>% drop_na()%>% mutate(“prozent” = n/sum(n))%>% arrange(desc(prozent)) #weltweit                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| # Durchschnitt von: # wie groß ist Anteil an Horror, … in einem speziellen Land? durchschnitt = sort_by_country%>% mutate(n = rowSums(sort_by_country\[ , columns_countries\]))%>%#alle länder aufsummieren select(Genre, n)%>% drop_na()%>% mutate(n = as.integer(n))%>% mutate(“prozent” = n/sum(n))%>% arrange(desc(prozent)) #durchschnitt #———————                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| for(i in columns_countries){                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| specific_country \<- sort_by_country%>% select(Genre, i)%>% drop_na()%>% mutate(“prozent” = !!as.symbol(i)/sum(!!as.symbol(i)))# ich rufe die gewünschte Spalte auf, obwohl ich nur einen Stig zur Verfügung habe                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| #reorder(Genre, prozent) my_plot = ggplot(NULL, aes(x = prozent, y = reorder(Genre, prozent))) + # Draw ggplot2 plot based on two data frames geom_col(data = durchschnitt) + geom_point(data = specific_country, col = “orange”)+ scale_x\_continuous(limits = c(0, 0.2))+ labs(title = i, x = “Genre/im Land verfügbar”, y = ” “)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| print(my_plot) } \`\`\`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `r ggplot(NULL, aes(x = prozent, y = reorder(Genre, prozent))) +    # Draw ggplot2 plot based on two data frames geom_col(data = weltweit) + geom_point(data = durchschnitt, col = "orange")+ scale_x_continuous(limits = c(0, 0.2))+ labs(title = "weltweite Verteilung (bar)", x = "durchschnittliche Verteilung pro land (orange)", y = " ")` beobachtungen:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| \- documentary, realyty tv und shorts sind ausreißer                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| -> Warscheinlich existieren insgesamt wenige Dokumentationen und Shorts, die dafür aber in viel mehr Ländern verfügbar sind damit fallen sie insgesamt nicht ins Gewicht, in einem land prozentual aber schon                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| insgesamt gibt es etwa 6-mal so viele Dramen wie Documentaries, aber in den einzelnen Ländern sind es nur noch etwa 3-mal so viele                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| \`\`\`r columns_generes = c(“Action”, “Adult”, “Adventure”, “Animation”, “Biography”, “Comedy”, “Crime”, “Documentary”, “Drama”, “Family”, “Fantasy”, “Film-Noir”, “Game-Show”, “History”, “Horror”, “Music”, “Musical”, “Mystery”, “News”, “Reality-TV”, “Romance”, “Sci-Fi”, “Short”, “Sport”, “Talk-Show”, “Thriller”, “War”, “Western”)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| sort_by_genre \<- data%>% select(“Title”, “Genre”, “Country Availability”)%>% separate_rows(`Country Availability`, sep = “,”)%>% separate_rows(Genre, sep = “,”)%>% count(Genre, `Country Availability`)%>% spread(key = Genre, value = n)%>% select(-“<NA>”)%>% # ab hier bringe ich die NA werte in ordnung filter(!is.na(`Country Availability`))%>% replace(is.na(.), 0) sort_by_genre \`\`\`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `` ## # A tibble: 36 x 29 ##    `Country Availabilit~ Action Adult Adventure Animation Biography Comedy Crime ##    <chr>                  <int> <int>     <int>     <int>     <int>  <int> <int> ##  1 Argentina                914     2       630       591       199   1793   674 ##  2 Australia                932     4       611       607       224   1993   731 ##  3 Belgium                  971     2       679       639       220   1919   742 ##  4 Brazil                   896     2       617       575       196   1724   658 ##  5 Canada                  1022     4       645       617       225   2008   765 ##  6 Colombia                 904     2       623       575       199   1577   672 ##  7 Czech Republic          1002     5       660       568       250   2129   765 ##  8 France                   886     2       624       652       202   1848   656 ##  9 Germany                  972     4       679       593       233   1949   719 ## 10 Greece                   851     3       549       503       192   1816   642 ## # ... with 26 more rows, and 21 more variables: Documentary <int>, Drama <int>, ## #   Family <int>, Fantasy <int>, Film-Noir <int>, Game-Show <int>, ## #   History <int>, Horror <int>, Music <int>, Musical <int>, Mystery <int>, ## #   News <int>, Reality-TV <int>, Romance <int>, Sci-Fi <int>, Short <int>, ## #   Sport <int>, Talk-Show <int>, Thriller <int>, War <int>, Western <int> `` |
+| `` r sort_by_genre%>% select(`Country Availability`, Documentary, Drama) ``                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `` ## # A tibble: 36 x 3 ##    `Country Availability` Documentary Drama ##    <chr>                        <int> <int> ##  1 Argentina                      599  2068 ##  2 Australia                      644  2350 ##  3 Belgium                        586  2177 ##  4 Brazil                         591  2015 ##  5 Canada                         661  2405 ##  6 Colombia                       558  2056 ##  7 Czech Republic                 652  2534 ##  8 France                         577  2074 ##  9 Germany                        588  2229 ## 10 Greece                         600  2161 ## # ... with 26 more rows ``                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `r data%>% select("Title", "Genre")%>% separate_rows(Genre, sep = ", ")%>% count(Genre)%>% filter(Genre == "Documentary" | Genre == "Drama")`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `## # A tibble: 2 x 2 ##   Genre           n ##   <chr>       <int> ## 1 Documentary  1030 ## 2 Drama        6359`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| \- es scheinen sich eher die unbeliebteren Genres zu vertauschen - Deutschland ist voll im Durchschnitt und damit langweilig                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| \- halbwegs interessant finde ich: Japan, United States, South Africa, Mexico, Lithuania, Columbia (mehr oder weniger willkürliche Wahl)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| \- Show/ Filme unterscheiden (in wievielen Sprachen sind diese verfügbar?)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| evtl. wiederverwertbare Codeschnipsel                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 
 ## Genre vs. Year
 
@@ -375,7 +173,7 @@ left_join(year_per_genre, year_genre_total, by = "year") %>%
   ggplot(aes(x = year, y = prop, color = Genre)) + geom_point()
 ```
 
-![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
 Trotz (nzw. sogar wegen) des Overplotting sehen wir klar: Mit
 zunehmender Jahreszahl gibt es mehr Genres und die einzelnen Genres
@@ -403,7 +201,7 @@ temp %>%
 #summary(lm)
 ```
 
-![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
 Allerdings wird in unserem Datensatz ein Film i.d.R. mehreren Genres
 zugeordnet. Liegt der Zusammenhang also eventuell daran, dass neuere
@@ -428,7 +226,7 @@ data %>%
        x = "Jahr")
 ```
 
-![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 Anhand des Plots lässt sich diese Vermutung widerlegen, denn die Zahl
 der Genres ist fast immer zwischen 2.5 und .5, lediglich vor 1980 sieht
@@ -490,7 +288,7 @@ countriesPerYear%>%
        x = "Veröffentlichungsjahr des Films")
 ```
 
-![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-10-1.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-10-2.png)
+![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-11-1.png)![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-11-2.png)
 
 Interessanterweise sieht man diesen Trend nicht so deutlich, wenn man
 das Veröffentlichungsjahr auf Netflix betrachtet, da die Zahlen seit
@@ -513,7 +311,7 @@ data %>%
        x = "Veröffentlichungsjahr auf Netflix")
 ```
 
-![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
 Dieser Trend ist überraschend, vor allem im Vergleich zu den
 Veröffentlichungszahlen von Filmen auf Netflix
@@ -531,7 +329,7 @@ Veröffentlichungszahlen von Filmen auf Netflix
        x = "Veröffentlichungsjahr auf Netflix")
 ```
 
-![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
 Das lässt darauf schließen: neue Werke sind auf Netflix internationaler
 erhältlich als alte Werke, das Veröffentlichungsdatum auf Netflix spielt

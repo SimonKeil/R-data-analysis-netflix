@@ -65,15 +65,33 @@ Da dies aber (nach unserem Wissen) Einzelfälle sind und es zu diesem Thema kaum
 
 
 
+## Explorative Datenanalyse
 
-Daten einlesen:
+Zunächst einmal lesen wir die Daten ein, und bringen sie auf ein Brauchbares Format.
+Uns interessieren vor allem die Variablen "Title", "Genre", "Country Availability" und "Release Date". Dabei teilen wir die Einträge in "Country Availability" und "Release Date" in mehrere Zeilen auf.
 ```{r, message=FALSE}
 library("tidyverse")
 data <- read_csv("Data/netflix-rotten-tomatoes-metacritic-imdb.csv")
+
+data_films <- data %>%
+  select('Release Date', 'Title', 'Genre', 'Country Availability') %>%
+  rename(Release = 'Release Date', Country = 'Country Availability') %>% 
+  drop_na() %>%
+  arrange(Title) %>%
+  separate_rows(Genre, sep = ", ") %>%
+  separate_rows(Country, sep = ",")
+
+write.csv(data_films , file = "Data\\data_films.csv", row.names = FALSE)
 ```
 
-## Explorative Datenanalyse
+und jetzt können wir mit unseren Daten loslegen:
+```{r}
+myData <- read_csv("Data/data_films.csv")
+```
 
+
+
+------------------------------------------------------------------
 Zunächst schauen wir uns an, wieviele Filme und Serien es pro Land gibt und in wievielen Ländern Filme und Serien verfügbar sind. 
 ```{r}
 title_country <- data%>%
@@ -320,6 +338,7 @@ specific_country <- sort_by_country%>%
   mutate("prozent" = n/sum(n))
 #sum(specific_country$prozent)
 ```
+------------------------------------------------------------------
 
 ## Genre vs. Year
 
