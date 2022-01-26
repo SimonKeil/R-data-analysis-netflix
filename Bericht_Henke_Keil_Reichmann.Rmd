@@ -65,6 +65,7 @@ Aufgrund der Heterogenität der Daten sind manche Variablen vertrauenswürdiger 
 
 Da dies aber (nach unserem Wissen) Einzelfälle sind und es zu diesem Thema kaum bis keine besseren Daten gibt, haben wir trotz dieser Probleme dieses Datenset verwendet.
 
+Teilweise tauchen Filme öfter doppelt auf, um diese Duplikate müssen wir uns speziell kümmern.
 
 ```{r, message=FALSE, echo=FALSE}
 library("tidyverse")
@@ -75,10 +76,13 @@ data_expanded <- read_csv("Data/data_expanded.csv")
 ```
 
 ```{r eval=FALSE, include=FALSE}
-data <- read_csv("Data/netflix-rotten-tomatoes-metacritic-imdb.csv")
+raw_data <- read_csv("Data/netflix-rotten-tomatoes-metacritic-imdb.csv")
 
 # dataset to work with throughout the analysis
-data_basic <- raw_data %>% rename(country = 'Country Availability') %>% 
+data_basic <- raw_data %>%
+  # remove duplicate Movies
+  distinct(Title, `Release Date`, .keep_all = TRUE) %>% 
+  rename(country = 'Country Availability') %>% 
   # reformat release date to only the year
   mutate(year = as.integer(substr(`Release Date`, 8, 12))) %>% 
   # exclude years with close to no entries
@@ -102,6 +106,18 @@ data_expanded <- data_genre %>%
   separate_rows(country, sep = ",")
 write.csv(data_expanded , file = "Data\\data_expanded.csv", row.names = FALSE)
 ```
+```{r eval=FALSE, include=FALSE}
+# filme, die doppelt auftauchen:
+raw_data %>%
+  count(Title, `Release Date`) %>%
+  filter(n>1)
+
+raw_data %>%
+  distinct(Title, `Release Date`, .keep_all = TRUE) %>%
+  count(Title, `Release Date`) %>%
+  filter(n>1)
+```
+
 
 
 ## Explorative Datenanalyse
@@ -141,7 +157,23 @@ data_country %>%
        y = "Land")
 ```
 
-Man sieht, dass es starke Unterschiede zwischen den einzelnen Ländern gibt und dass keine Gruppenbildung in z.B. Länder mit sehr viel und Ländern mit weniger Auswahl zu erkennen ist.
+Man sieht, dass es starke Unterschiede zwischen den einzelnen Ländern gibt und dass keine Gruppenbildung in z.B. Länder mit sehr viel und Ländern mit weniger Filmtiteln zu erkennen ist.
+
+Eine naheliegende Folgerung wäre, dass die Auswahl an Filmen in vielen Ländern ähnlich ist. Das würde bedeuten, dass die meisten Filme in fast allen Ländern verfügbar sind.
+Dem ist aber nicht so:
+```{r}
+data_basic %>%
+  filter(Title == "A Love So Beautiful")
+
+data_country %>% 
+  count(Title) %>%
+  ggplot(mapping = aes(x = n)) +
+  geom_histogram(boundary = 0, bins = 95) +
+  labs(title = "wieviele Filme gibt es, die in genau X-vielen Ländern verfügbar sind?",
+       x = "Anzahl Länder, in denen die Filme ferfügbar sind",
+       y = "Anzahl Filme, die so oft verfügbar sind")
+```
+
 
 __Untersuchung Internationalität vs. Veröffentlichungsjahr__
 

@@ -86,6 +86,9 @@ Da dies aber (nach unserem Wissen) Einzelfälle sind und es zu diesem
 Thema kaum bis keine besseren Daten gibt, haben wir trotz dieser
 Probleme dieses Datenset verwendet.
 
+Teilweise tauchen Filme öfter doppelt auf, um diese Duplikate müssen wir
+uns speziell kümmern.
+
 ## Explorative Datenanalyse
 
 *Anmerkung zu Beginn der Analyse:* Wir lesen vor der eigentlichen
@@ -111,7 +114,7 @@ Filme aus den letzten Jahren stammen, allein 25% aus den Jahren 2017 bis
 dem jeweiligen Veröffentlichungsjahr darstellt. Da der Zusammenhang
 annährend exponentiell ist, ist die Anzahl im Plot mit einer
 logarithmischen Skala versehen.
-![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
 Nun schauen wir uns die Länder in unserem Datensatz etwas genauer an. Es
 gibt
@@ -121,11 +124,37 @@ gibt
 Länder in unserem Datensatz. Eine interessante Kenngröße ist, wieviele
 Filme und Serien es jeweils in den Ländern gibt.
 
-![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 Man sieht, dass es starke Unterschiede zwischen den einzelnen Ländern
 gibt und dass keine Gruppenbildung in z.B. Länder mit sehr viel und
-Ländern mit weniger Auswahl zu erkennen ist.
+Ländern mit weniger Filmtiteln zu erkennen ist.
+
+Eine naheliegende Folgerung wäre, dass die Auswahl an Filmen in vielen
+Ländern ähnlich ist. Das würde bedeuten, dass die meisten Filme in fast
+allen Ländern verfügbar sind. Dem ist aber nicht so:
+
+``` r
+data_basic %>%
+  filter(Title == "A Love So Beautiful")
+```
+
+    ## # A tibble: 1 x 4
+    ##   Genre            year Title               country                             
+    ##   <chr>           <dbl> <chr>               <chr>                               
+    ## 1 Comedy, Romance  2017 A Love So Beautiful Iceland,Canada,South Africa,Thailan~
+
+``` r
+data_country %>% 
+  count(Title) %>%
+  ggplot(mapping = aes(x = n)) +
+  geom_histogram(boundary = 0, bins = 95) +
+  labs(title = "wieviele Filme gibt es, die in genau X-vielen Ländern verfügbar sind?",
+       x = "Anzahl Länder, in denen die Filme ferfügbar sind",
+       y = "Anzahl Filme, die so oft verfügbar sind")
+```
+
+![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
 **Untersuchung Internationalität vs. Veröffentlichungsjahr**
 
@@ -142,13 +171,13 @@ Veröffentlichungsjahr an, wobei wir ähnlich wie oben nur Filme zwischen
 insbesondere wenn wir die in R eingebaute, automatische Glättungskurve
 einbauen.
 
-![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
 Zuletzt untersuchen wir noch die Genres
-![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 und die Genres im zeitlichen Verlauf:
-![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
 Trotz (bzw. sogar wegen) des Overplotting sehen wir klar: Mit
 zunehmender Jahreszahl gibt es mehr Genres und die einzelnen Genres
@@ -156,7 +185,7 @@ tendieren dazu einen kleineren Anteil auszumachen, denn die Punkte
 liegen rechts unten im Plot am dichtesten. Zählen wir die Genres pro
 Jahr erhalten wir einen annährend linearen Zusammenhang:
 
-![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
 Allerdings wird in unserem Datensatz ein Film i.d.R. mehreren Genres
 zugeordnet. Liegt der Zusammenhang also eventuell daran, dass neuere
@@ -164,7 +193,7 @@ Filme einfach mehr unterschiedlichen Genres zugeordnet werden? Um das zu
 beantworten plotten wir die durchschnittliche Zahl der Genres denen ein
 Film in einem gegebenen Jahr zugeordnet wird:
 
-![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
 Anhand des Plots lässt sich diese Vermutung widerlegen, denn die Zahl
 der Genres ist fast immer zwischen 2.5 und .5, lediglich vor 1980 sieht
