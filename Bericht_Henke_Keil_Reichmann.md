@@ -134,25 +134,10 @@ Eine naheliegende Folgerung wäre, dass die Auswahl an Filmen in vielen
 Ländern ähnlich ist. Das würde bedeuten, dass die meisten Filme in fast
 allen Ländern verfügbar sind. Dem ist aber nicht so:
 
-``` r
-data_basic %>%
-  filter(Title == "A Love So Beautiful")
-```
-
     ## # A tibble: 1 x 4
     ##   Genre            year Title               country                             
     ##   <chr>           <dbl> <chr>               <chr>                               
     ## 1 Comedy, Romance  2017 A Love So Beautiful Iceland,Canada,South Africa,Thailan~
-
-``` r
-data_country %>% 
-  count(Title) %>%
-  ggplot(mapping = aes(x = n)) +
-  geom_histogram(boundary = 0, bins = 95) +
-  labs(title = "wieviele Filme gibt es, die in genau X-vielen Ländern verfügbar sind?",
-       x = "Anzahl Länder, in denen die Filme ferfügbar sind",
-       y = "Anzahl Filme, die so oft verfügbar sind")
-```
 
 ![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 

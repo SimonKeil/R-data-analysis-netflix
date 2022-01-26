@@ -9,7 +9,8 @@ knitr::opts_chunk$set(
 	echo = TRUE,
 	fig.show = "hold",
 	message = FALSE,
-	warning = FALSE
+	warning = FALSE,
+	echo = FALSE
 )
 ```
 Fragestunde: reicht eine Regression?
@@ -106,6 +107,7 @@ data_expanded <- data_genre %>%
   separate_rows(country, sep = ",")
 write.csv(data_expanded , file = "Data\\data_expanded.csv", row.names = FALSE)
 ```
+
 ```{r eval=FALSE, include=FALSE}
 # filme, die doppelt auftauchen:
 raw_data %>%
@@ -125,12 +127,12 @@ raw_data %>%
 *Anmerkung zu Beginn der Analyse:* Wir lesen vor der eigentlichen Auswertung die Daten ein und reduzieren sie auf den Grund-Datenbestand, den wir im Folgenden nutzen wollen: Die Spalten mit dem Titel, Genres, Veröffentlichungsdatum und Länder Verfügbarkeit. Dabei enfernen wir zudem alle Zeilen in denen Angaben fehlen sowie die Filme/Serien mit Veröffentlichungsdatum vor 1965 und nach 2020, da in diesen Jahren nur sehr wenige Einträge vorhanden sind, sodass keine sinvollen Aussagen getroffen werden können.
 
 Zunächst schauen wir uns ein paar allgemeine Zahlen zu unserem (aufgeräumten) Datensatz an. Wir beginnen mit einer statistischen Übersicht zu den Veröffentlichungsjahren:
-```{r, echo=FALSE}
+```{r}
 summary(data_basic$year)
 ```
 Wir beobachten zum einen, dass nur noch Werte von 1961 bis 2019 im Datensatz sind (wie oben begründet) und zum anderen, dass sehr viele Filme aus den letzten Jahren stammen, allein 25% aus den Jahren 2017 bis 2019.
 Diese Beobachtung sieht man auch, wenn man die Zahl der Filme in dem jeweiligen Veröffentlichungsjahr darstellt. Da der Zusammenhang annährend exponentiell ist, ist die Anzahl im Plot mit einer logarithmischen Skala versehen.
-```{r, echo=FALSE}
+```{r}
 data_basic %>% 
   count(year) %>% 
   ggplot(aes(x = year, y = n)) +
@@ -141,12 +143,12 @@ data_basic %>%
 ```
 
 Nun schauen wir uns die Länder in unserem Datensatz etwas genauer an. Es gibt 
-```{r, echo=FALSE}
+```{r}
 (data_country %>% distinct(country) %>% count())$n
 ```
 Länder in unserem Datensatz. Eine interessante Kenngröße ist, wieviele Filme und Serien es jeweils in den Ländern gibt.
 
-```{r, echo=FALSE}
+```{r}
 data_country %>%
   count(country)%>%
   select(n, country)%>%
@@ -184,7 +186,7 @@ Netflix wird immer internationaler und hat mehr und mehr Eigenproduktionen. Füh
 
 Zunächst schauen wir uns die Film basierend auf ihr ursprüngliches Veröffentlichungsjahr an, wobei wir ähnlich wie oben nur Filme zwischen 1960 und 2021 betrachten. Hier sehen wir eine interessante Kurve, insbesondere wenn wir die in R eingebaute, automatische Glättungskurve einbauen.
 
-```{r, echo=FALSE}
+```{r}
 countriesPerYear <- data_country %>% 
   count(Title, year) %>%
   group_by(year) %>% 
@@ -200,7 +202,7 @@ countriesPerYear%>%
 ```
 
 Zuletzt untersuchen wir noch die Genres
-```{r, echo=FALSE}
+```{r}
 data_genre %>%
   count(Genre) %>% 
   arrange(n) %>%
@@ -212,7 +214,7 @@ data_genre %>%
 ```
 
 und die Genres im zeitlichen Verlauf: 
-```{r, echo=FALSE}
+```{r}
 year_per_genre <- data_genre %>%
   count(year, Genre)
 year_genre_total <- data_genre %>% count(year)
@@ -227,7 +229,7 @@ left_join(year_per_genre, year_genre_total, by = "year") %>%
 
 Trotz (bzw. sogar wegen) des Overplotting sehen wir klar: Mit zunehmender Jahreszahl gibt es mehr Genres und die einzelnen Genres tendieren dazu einen kleineren Anteil auszumachen, denn die Punkte liegen rechts unten im Plot am dichtesten. Zählen wir die Genres pro Jahr erhalten wir einen annährend linearen Zusammenhang:
 
-```{r, echo=FALSE}
+```{r}
 count_genre_vs_year <- data_genre %>%
   select(Genre, year) %>% 
   group_by(year) %>% 
@@ -243,7 +245,7 @@ count_genre_vs_year %>%
 
 Allerdings wird in unserem Datensatz ein Film i.d.R. mehreren Genres zugeordnet. Liegt der Zusammenhang also eventuell daran, dass neuere Filme einfach mehr unterschiedlichen Genres zugeordnet werden? Um das zu beantworten plotten wir die durchschnittliche Zahl der Genres denen ein Film in einem gegebenen Jahr zugeordnet wird:
 
-```{r, echo=FALSE}
+```{r}
 data_genre %>%
   count(Title, year) %>%
   group_by(year) %>% 
