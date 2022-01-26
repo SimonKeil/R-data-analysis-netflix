@@ -49,12 +49,18 @@ Video-on-Demand-Anbieter der Welt mit knapp 200 Millionen Abonnenten
 \[1\]. Der Streaming-Riese ist heute in mehr als 190 Ländern verfügbar
 und hat tausende Inhalte in verschieden Sprachen \[2\].
 
-Doch Netflix ist nicht gleich Netflix: Netflix ist regional aufgrund von
-unterschiedlichen Lizenzvereinbarungen und kultureller Unterschiede zum
-Teil sehr unterschiedlich. Was man auf Netflix Deutschland gucken kann,
-muss nicht bei Netflix USA verfügbar sein. Dies wollen wir im folgenden
-Bericht genauer untersuchen und diese Unterschiede herausarbeiten. Denn
-wir wollen herausfinden: **Welches Land hat das beste Netflix?**
+Hierbei hat Netflix eine große Bandbreite an Filmen und Serien in
+verschiedensten Genres und aus verschiedenen Jahren. Netflix kauft und
+produziert Inhalte oft nach Daten, sodass ihr Sortiment keiner wahllosen
+Zusammenstellung sondern eher einer kuratierten Auswahl gleicht \[3\].
+
+Dadurch ist die Auswahl, welche Inhalte auf Netflix verfügbar sind und
+wie diese im Zusammenhang mit Genre, Erscheinungsjahr und weiteren
+Charakteristika zusammengestellt sind, um einiges spannender.
+Insbesondere erweist der Vergleich von älteren und neueren Inhalten
+spannend. Deshalb wollen wir in diesem Bericht der Frage nachgehen: *wie
+verhalten sich die Inhalte auf Netflix bezüglich ihres
+Erscheinungsjahr?*
 
 Hierzu haben wir Daten von Kaggle, genauer gesagt von Ashish Gupta,
 unter
@@ -63,7 +69,7 @@ Da es keine offizielle Netflix API gibt, wurden hier Daten von mehreren
 verschiedenen APIs und Seiten wie “Rotten Tomatoes”, “iMDB” und weiteren
 Quellen zusammengetragen. Zudem hat er eine eigene Metrik, den “Hidden
 Gem Score”, hinzugefügt, der aus den Daten Geheimtipps ermitteln soll.
-Diesen haben wir aber für unsere Betrachungen nicht beachtet.
+Diesen haben wir aber für unsere Betrachtungen nicht beachtet.
 
 Aufgrund der Heterogenität der Daten sind manche Variablen
 vertrauenswürdiger als andere. Zum Teil scheinen die Sprachen nicht
@@ -71,10 +77,10 @@ akurat zu sein, auch Sprachen wie “Latin” werden genannt, die wir in
 keinem Film auf Netflix finden konnten. Wir vermuten Übersetzungsfehler,
 können aber den Fehlerursprung nicht eindeutig ermitteln. Zum Teil sind
 auch bei Zusammenfügen der Daten aus verschiedenen Quellen Fehler
-aufgetreten. So ist bei der Serie “Barberen??????” die Netflix-Serie
-deutscher Herkunft mit dem iMDB-Eintrag tschechischen Film ???? aus 20??
-verbunden wurden. So sind die Daten zum Teil von der Serie, zum Teil vom
-Film.
+aufgetreten. So ist vermutlich bei der Serie “Barberen??????” die
+Netflix-Serie deutscher Herkunft mit dem iMDB-Eintrag tschechischen Film
+???? aus 20?? verbunden wurden. Die Daten sind zum Teil von der Serie,
+zum Teil vom Film.
 
 Da dies aber (nach unserem Wissen) Einzelfälle sind und es zu diesem
 Thema kaum bis keine besseren Daten gibt, haben wir trotz dieser
@@ -175,3 +181,6 @@ zur Erfolgsgeschichte des Streaming-Riesen*.
 
 \[2\] Netflix. *Where ist Netflix available?.*
 <https://help.netflix.com/en/node/14164>
+
+\[3\] Netflix. *How does Netflix license TV shows and movies?.*
+<https://help.netflix.com/en/node/4976#>:\~:text=Netflix%20uses%20a%20variety%20of,shows%20and%20movies%20we%20suggest.
