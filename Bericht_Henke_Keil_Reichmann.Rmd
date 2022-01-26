@@ -66,10 +66,13 @@ Da dies aber (nach unserem Wissen) Einzelfälle sind und es zu diesem Thema kaum
 
 ```{r, message=FALSE, echo=FALSE}
 library("tidyverse")
-raw_data <- read_csv("Data/netflix-rotten-tomatoes-metacritic-imdb.csv")
+data_basic <- read_csv("Data/data_basic.csv")
+data_genre <- read_csv("Data/data_genre.csv")
+data_country <- read_csv("Data/data_country.csv")
+data_expanded <- read_csv("Data/data_expanded.csv")
 ```
 
-```{r, echo=FALSE}
+```{r eval=FALSE, include=FALSE}
 # dataset to work with throughout the analysis
 data_basic <- raw_data %>% rename(country = 'Country Availability') %>% 
   # reformat release date to only the year
@@ -78,18 +81,22 @@ data_basic <- raw_data %>% rename(country = 'Country Availability') %>%
   filter(year > 1965 & year < 2020) %>% 
   select(Genre, year, Title, country) %>%
   drop_na()
+write.csv(data_basic , file = "Data\\data_basic.csv", row.names = FALSE)
 
 # dataset with list of genres separated into individual rows
 data_genre <- data_basic %>% 
   separate_rows(Genre, sep = ", ")
+write.csv(data_genre , file = "Data\\data_genre.csv", row.names = FALSE)
 
 # dataset with list of countries separated into individual rows
 data_country <- data_basic %>%
   separate_rows(country, sep = ",")
+write.csv(data_country , file = "Data\\data_country.csv", row.names = FALSE)
 
 # dataset with list of genres and countries separated into individual rows
 data_expanded <- data_genre %>%
   separate_rows(country, sep = ",")
+write.csv(data_expanded , file = "Data\\data_expanded.csv", row.names = FALSE)
 ```
 
 
