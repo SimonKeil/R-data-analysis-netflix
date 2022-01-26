@@ -86,8 +86,8 @@ Da dies aber (nach unserem Wissen) Einzelfälle sind und es zu diesem
 Thema kaum bis keine besseren Daten gibt, haben wir trotz dieser
 Probleme dieses Datenset verwendet.
 
-Teilweise tauchen Filme öfter doppelt auf, um diese Duplikate müssen wir
-uns speziell kümmern.
+Teilweise tauchen Filme öfter auf, um diese Duplikate müssen wir uns
+speziell kümmern.
 
 ## Explorative Datenanalyse
 
@@ -134,10 +134,48 @@ Eine naheliegende Folgerung wäre, dass die Auswahl an Filmen in vielen
 Ländern ähnlich ist. Das würde bedeuten, dass die meisten Filme in fast
 allen Ländern verfügbar sind. Dem ist aber nicht so:
 
-    ## # A tibble: 1 x 4
-    ##   Genre            year Title               country                             
-    ##   <chr>           <dbl> <chr>               <chr>                               
-    ## 1 Comedy, Romance  2017 A Love So Beautiful Iceland,Canada,South Africa,Thailan~
+    ## # A tibble: 13 x 3
+    ##    Title                       year     n
+    ##    <chr>                      <dbl> <int>
+    ##  1 "Champions"                 2018     2
+    ##  2 "Gold"                      2017     3
+    ##  3 "Heidi"                     2015     2
+    ##  4 "I Am"                      2011     2
+    ##  5 "Kakegurui"                 2018     2
+    ##  6 "Kingdom"                   2019     3
+    ##  7 "Love and Lies"             2017     2
+    ##  8 "Meridian"                  2016     2
+    ##  9 "Midnight Diner"            2015     3
+    ## 10 "My Babysitters a Vampire"  2011     3
+    ## 11 "Revenge"                   2018     2
+    ## 12 "Spark"                     2017     2
+    ## 13 "Ver\xf3nica"               2017     2
+
+    ## # A tibble: 7 x 3
+    ##   Title             year     n
+    ##   <chr>            <dbl> <int>
+    ## 1 "Champions"       2018    37
+    ## 2 "Heidi"           2015    45
+    ## 3 "Kakegurui"       2018    72
+    ## 4 "Kingdom"         2019   105
+    ## 5 "Meridian"        2016    65
+    ## 6 "Midnight Diner"  2015    72
+    ## 7 "Ver\xf3nica"     2017    64
+
+    ## # A tibble: 52 x 4
+    ##    country       year Title                             Genre                   
+    ##    <chr>        <dbl> <chr>                             <chr>                   
+    ##  1 France        2009 Cloudy with a Chance of Meatballs Adventure, Animation, C~
+    ##  2 Japan         2009 Cloudy with a Chance of Meatballs Adventure, Animation, C~
+    ##  3 South Korea   2009 Cloudy with a Chance of Meatballs Adventure, Animation, C~
+    ##  4 Belgium       2009 Cloudy with a Chance of Meatballs Adventure, Animation, C~
+    ##  5 South Africa  2009 Cloudy with a Chance of Meatballs Adventure, Animation, C~
+    ##  6 Switzerland   2009 Cloudy with a Chance of Meatballs Adventure, Animation, C~
+    ##  7 Canada        2009 Cloudy with a Chance of Meatballs Adventure, Animation, C~
+    ##  8 Brazil        2009 Cloudy with a Chance of Meatballs Adventure, Animation, C~
+    ##  9 Netherlands   2009 Cloudy with a Chance of Meatballs Adventure, Animation, C~
+    ## 10 Israel        2009 Cloudy with a Chance of Meatballs Adventure, Animation, C~
+    ## # ... with 42 more rows
 
 ![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
