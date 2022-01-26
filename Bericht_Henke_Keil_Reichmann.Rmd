@@ -73,6 +73,8 @@ data_expanded <- read_csv("Data/data_expanded.csv")
 ```
 
 ```{r eval=FALSE, include=FALSE}
+data <- read_csv("Data/netflix-rotten-tomatoes-metacritic-imdb.csv")
+
 # dataset to work with throughout the analysis
 data_basic <- raw_data %>% rename(country = 'Country Availability') %>% 
   # reformat release date to only the year
