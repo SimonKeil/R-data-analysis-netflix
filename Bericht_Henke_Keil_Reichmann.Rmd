@@ -79,8 +79,8 @@ data_expanded <- read_csv("Data/data_expanded.csv")
 ```{r eval=FALSE, include=FALSE}
 raw_data <- read_csv("Data/netflix-rotten-tomatoes-metacritic-imdb.csv")
 
-# dataset to work with throughout the analysis
-data_basic <- raw_data %>%
+# dataset with list of genres and countries separated into individual rows
+data_expanded <- raw_data %>%
   rename(country = 'Country Availability') %>% 
   # reformat release date to only the year
   mutate(year = as.integer(substr(`Release Date`, 8, 12))) %>% 
@@ -88,30 +88,29 @@ data_basic <- raw_data %>%
   filter(year > 1965 & year < 2020) %>% 
   select(Genre, year, Title, country) %>%
   drop_na() %>% 
-  # remove duplicate Movies
   separate_rows(Genre, sep = ", ") %>%
   separate_rows(country, sep = ",") %>%
-  distinct(.keep_all = TRUE) %>%
-  group_by(Genre, year, Title) %>%
-  summarise(country = paste(country, collapse = ",")) %>%
-  group_by(country, year, Title) %>%
-  summarise(Genre = paste(Genre, collapse = ", "))
-write.csv(data_basic , file = "Data\\data_basic.csv", row.names = FALSE)
+  # remove duplicate Movies
+  distinct(.keep_all = TRUE)
+write.csv(data_expanded , file = "Data\\data_expanded.csv", row.names = FALSE)
 
 # dataset with list of genres separated into individual rows
-data_genre <- data_basic %>% 
-  separate_rows(Genre, sep = ", ")
+data_genre <- data_expanded %>%
+  group_by(Genre, year, Title) %>%
+  summarise(country = paste(country, collapse = ", ")) 
 write.csv(data_genre , file = "Data\\data_genre.csv", row.names = FALSE)
 
 # dataset with list of countries separated into individual rows
-data_country <- data_basic %>%
-  separate_rows(country, sep = ",")
+data_country <- data_expanded %>%
+  group_by(country, year, Title) %>%
+  summarise(Genre = paste(Genre, collapse = ", "))
 write.csv(data_country , file = "Data\\data_country.csv", row.names = FALSE)
 
-# dataset with list of genres and countries separated into individual rows
-data_expanded <- data_genre %>%
-  separate_rows(country, sep = ",")
-write.csv(data_expanded , file = "Data\\data_expanded.csv", row.names = FALSE)
+# dataset to work with throughout the analysis
+data_basic <- data_genre %>%
+  group_by(country, year, Title) %>%
+  summarise(Genre = paste(Genre, collapse = ", "))
+write.csv(data_basic , file = "Data\\data_basic.csv", row.names = FALSE)
 ```
 
 ```{r eval=FALSE, include=FALSE}

@@ -151,30 +151,22 @@ allen Ländern verfügbar sind. Dem ist aber nicht so:
     ## 12 "Spark"                     2017     2
     ## 13 "Ver\xf3nica"               2017     2
 
-    ## # A tibble: 7 x 3
-    ##   Title             year     n
-    ##   <chr>            <dbl> <int>
-    ## 1 "Champions"       2018    37
-    ## 2 "Heidi"           2015    45
-    ## 3 "Kakegurui"       2018    72
-    ## 4 "Kingdom"         2019   105
-    ## 5 "Meridian"        2016    65
-    ## 6 "Midnight Diner"  2015    72
-    ## 7 "Ver\xf3nica"     2017    64
+    ## # A tibble: 0 x 3
+    ## # ... with 3 variables: Title <chr>, year <dbl>, n <int>
 
     ## # A tibble: 52 x 4
-    ##    country       year Title                             Genre                   
-    ##    <chr>        <dbl> <chr>                             <chr>                   
-    ##  1 France        2009 Cloudy with a Chance of Meatballs Adventure, Animation, C~
-    ##  2 Japan         2009 Cloudy with a Chance of Meatballs Adventure, Animation, C~
-    ##  3 South Korea   2009 Cloudy with a Chance of Meatballs Adventure, Animation, C~
-    ##  4 Belgium       2009 Cloudy with a Chance of Meatballs Adventure, Animation, C~
-    ##  5 South Africa  2009 Cloudy with a Chance of Meatballs Adventure, Animation, C~
-    ##  6 Switzerland   2009 Cloudy with a Chance of Meatballs Adventure, Animation, C~
-    ##  7 Canada        2009 Cloudy with a Chance of Meatballs Adventure, Animation, C~
-    ##  8 Brazil        2009 Cloudy with a Chance of Meatballs Adventure, Animation, C~
-    ##  9 Netherlands   2009 Cloudy with a Chance of Meatballs Adventure, Animation, C~
-    ## 10 Israel        2009 Cloudy with a Chance of Meatballs Adventure, Animation, C~
+    ##    country    year Title                             Genre                      
+    ##    <chr>     <dbl> <chr>                             <chr>                      
+    ##  1 Argentina  2009 Cloudy with a Chance of Meatballs Animation, Adventure, Come~
+    ##  2 Argentina  2017 Cloudy with a Chance of Meatballs Animation, Comedy, Family,~
+    ##  3 Australia  2009 Cloudy with a Chance of Meatballs Animation, Adventure, Come~
+    ##  4 Australia  2017 Cloudy with a Chance of Meatballs Animation, Comedy, Family,~
+    ##  5 Belgium    2009 Cloudy with a Chance of Meatballs Animation, Adventure, Come~
+    ##  6 Belgium    2017 Cloudy with a Chance of Meatballs Animation, Comedy, Family,~
+    ##  7 Brazil     2009 Cloudy with a Chance of Meatballs Animation, Adventure, Come~
+    ##  8 Brazil     2017 Cloudy with a Chance of Meatballs Animation, Comedy, Family,~
+    ##  9 Canada     2009 Cloudy with a Chance of Meatballs Animation, Adventure, Come~
+    ## 10 Colombia   2009 Cloudy with a Chance of Meatballs Animation, Adventure, Come~
     ## # ... with 42 more rows
 
 ![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
