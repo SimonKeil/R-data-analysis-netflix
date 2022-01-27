@@ -2,7 +2,7 @@ R-Projekt
 ================
 Márk Reichmann, Simon Keil, Daniel Henke
 
-Fragestunde: reicht eine Regression?
+Fragestunde: reicht eine Regression? -> ja!
 
 *Netflix im zeitlichen Verlauf*
 
@@ -133,43 +133,10 @@ Ländern mit weniger Filmtiteln zu erkennen ist.
 Eine naheliegende Folgerung wäre, dass die Auswahl an Filmen in vielen
 Ländern ähnlich ist. Das würde bedeuten, dass die meisten Filme in fast
 allen Ländern verfügbar sind. Dem ist aber nicht so:
-
-    ## # A tibble: 13 x 3
-    ##    Title                       year     n
-    ##    <chr>                      <dbl> <int>
-    ##  1 "Champions"                 2018     2
-    ##  2 "Gold"                      2017     3
-    ##  3 "Heidi"                     2015     2
-    ##  4 "I Am"                      2011     2
-    ##  5 "Kakegurui"                 2018     2
-    ##  6 "Kingdom"                   2019     3
-    ##  7 "Love and Lies"             2017     2
-    ##  8 "Meridian"                  2016     2
-    ##  9 "Midnight Diner"            2015     3
-    ## 10 "My Babysitters a Vampire"  2011     3
-    ## 11 "Revenge"                   2018     2
-    ## 12 "Spark"                     2017     2
-    ## 13 "Ver\xf3nica"               2017     2
-
-    ## # A tibble: 0 x 3
-    ## # ... with 3 variables: Title <chr>, year <dbl>, n <int>
-
-    ## # A tibble: 52 x 4
-    ##    country    year Title                             Genre                      
-    ##    <chr>     <dbl> <chr>                             <chr>                      
-    ##  1 Argentina  2009 Cloudy with a Chance of Meatballs Animation, Adventure, Come~
-    ##  2 Argentina  2017 Cloudy with a Chance of Meatballs Animation, Comedy, Family,~
-    ##  3 Australia  2009 Cloudy with a Chance of Meatballs Animation, Adventure, Come~
-    ##  4 Australia  2017 Cloudy with a Chance of Meatballs Animation, Comedy, Family,~
-    ##  5 Belgium    2009 Cloudy with a Chance of Meatballs Animation, Adventure, Come~
-    ##  6 Belgium    2017 Cloudy with a Chance of Meatballs Animation, Comedy, Family,~
-    ##  7 Brazil     2009 Cloudy with a Chance of Meatballs Animation, Adventure, Come~
-    ##  8 Brazil     2017 Cloudy with a Chance of Meatballs Animation, Comedy, Family,~
-    ##  9 Canada     2009 Cloudy with a Chance of Meatballs Animation, Adventure, Come~
-    ## 10 Colombia   2009 Cloudy with a Chance of Meatballs Animation, Adventure, Come~
-    ## # ... with 42 more rows
-
 ![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+Tatsächlich ist ein Großteil der Medien nur in einem einzigen Land
+abrufbar, das Angebot von netflix scheint also recht speziell auf
+einzelne Länder zugeschnitten zu sein.
 
 **Untersuchung Internationalität vs. Veröffentlichungsjahr**
 

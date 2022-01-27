@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
 	echo = FALSE
 )
 ```
-Fragestunde: reicht eine Regression?
+Fragestunde: reicht eine Regression? -> ja!
 
 _Netflix im zeitlichen Verlauf_
     
@@ -67,6 +67,17 @@ Aufgrund der Heterogenität der Daten sind manche Variablen vertrauenswürdiger 
 Da dies aber (nach unserem Wissen) Einzelfälle sind und es zu diesem Thema kaum bis keine besseren Daten gibt, haben wir trotz dieser Probleme dieses Datenset verwendet.
 
 Teilweise tauchen Filme öfter auf, um diese Duplikate müssen wir uns speziell kümmern.
+```{r eval=FALSE, include=FALSE}
+#duplikate noch zu fixen
+data_basic%>% 
+  count(Title, year)%>%
+  filter(n>1)
+data_basic%>% 
+  filter(Title == "Midnight Diner")
+data_expanded%>%
+  filter(Title == "Midnight Diner")
+
+```
 
 ```{r, message=FALSE, echo=FALSE}
 library("tidyverse")
@@ -113,23 +124,6 @@ data_basic <- data_genre %>%
 write.csv(data_basic , file = "Data\\data_basic.csv", row.names = FALSE)
 ```
 
-```{r eval=FALSE, include=FALSE}
-# filme, die doppelt auftauchen:
-raw_data %>%
-  count(Title, `Release Date`) %>%
-  filter(n>1)
-
-data_basic %>%
-  count(Title, year) %>%
-  filter(n>1)
-
-raw_data %>%
-  distinct(Title, `Release Date`, .keep_all = TRUE) %>%
-  count(Title, `Release Date`) %>%
-  filter(n>1)
-```
-
-
 
 ## Explorative Datenanalyse
 
@@ -173,26 +167,15 @@ Man sieht, dass es starke Unterschiede zwischen den einzelnen Ländern gibt und 
 Eine naheliegende Folgerung wäre, dass die Auswahl an Filmen in vielen Ländern ähnlich ist. Das würde bedeuten, dass die meisten Filme in fast allen Ländern verfügbar sind.
 Dem ist aber nicht so:
 ```{r}
-data_basic%>% 
-  count(Title, year)%>%
-  filter(n>1)
-
-data_country %>% 
-  count(Title, year)%>%
-  filter(n>36)
-
-data_country%>%
-  filter(Title == "Cloudy with a Chance of Meatballs")
-
 data_country %>% 
   count(Title, year) %>%
   ggplot(mapping = aes(x = n)) +
-  geom_histogram(boundary = 0, bins = 95) +
-  labs(title = "wieviele Filme gibt es, die in genau X-vielen Ländern verfügbar sind?",
-       x = "Anzahl Länder, in denen die Filme ferfügbar sind",
-       y = "Anzahl Filme, die so oft verfügbar sind")
+  geom_histogram(boundary = 0, bins = 36) +
+  labs(title = "In wievielen Ländern sind Filme verfügbar?",
+       x = "in so vielen Ländern verfügbar",
+       y = "Anzahl Filme")
 ```
-
+Tatsächlich ist ein Großteil der Medien nur in einem einzigen Land abrufbar, das Angebot von netflix scheint also recht speziell auf einzelne Länder zugeschnitten zu sein.
 
 __Untersuchung Internationalität vs. Veröffentlichungsjahr__
 
