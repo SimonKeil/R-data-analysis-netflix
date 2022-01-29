@@ -70,6 +70,54 @@ Da dies aber (nach unserem Wissen) Einzelfälle sind und es zu diesem Thema kaum
 
 
 
+```{r, message=FALSE, echo=FALSE}
+library("tidyverse")
+raw_data <- read_csv("Data/netflix-rotten-tomatoes-metacritic-imdb.csv")
+
+# dataset with list of genres and countries separated into individual rows
+
+df <- raw_data %>%
+  rename(country = 'Country Availability') %>%
+  rename(sOm ='Series or Movie') %>% 
+  mutate(movie = sOm =="Movie") %>%
+  # reformat release date to only the year
+  mutate(year = as.integer(substr(`Release Date`, 8, 12))) %>% 
+  # exclude years with close to no entries
+  filter(year > 1965 & year < 2020) %>% 
+  select(Genre, year, Title, country, movie) %>%
+  drop_na()
+
+a <- df %>%
+  select(Genre, year, Title) %>% 
+  separate_rows(Genre, sep = ", ") %>%
+  distinct(.keep_all = TRUE)
+
+b <- df %>%
+  select(year, Title, country) %>% 
+  separate_rows(country, sep = ",") %>%
+  distinct(.keep_all = TRUE)
+
+data_expanded <- full_join(a, b, by = c("year", "Title")) %>%
+  ungroup()
+
+# dataset with list of genres separated into individual rows
+data_genre <- data_expanded %>%
+  group_by(Genre, year, Title) %>%
+  summarise(country = paste(country, collapse = ", ")) %>%
+  ungroup()
+
+# dataset with list of countries separated into individual rows
+data_country <- data_expanded %>%
+  group_by(country, year, Title) %>%
+  summarise(Genre = paste(Genre, collapse = ", ")) %>%
+  ungroup()
+
+# dataset to work with throughout the analysis
+data_basic <- data_genre %>%
+  group_by(country, year, Title) %>%
+  summarise(Genre = paste(Genre, collapse = ", ")) %>%
+  ungroup()
+```
 ```{r eval=FALSE, include=FALSE}
 # wie bin ich mir duplikaten vorgegangen?
 
@@ -122,63 +170,6 @@ final
 final%>%drop_na()
 # jup :)
 ```
-
-```{r, message=FALSE, echo=FALSE}
-library("tidyverse")
-data_basic <- read_csv("Data/data_basic.csv")
-data_genre <- read_csv("Data/data_genre.csv")
-data_country <- read_csv("Data/data_country.csv")
-data_expanded <- read_csv("Data/data_expanded.csv")
-```
-
-```{r eval=FALSE, include=FALSE}
-raw_data <- read_csv("Data/netflix-rotten-tomatoes-metacritic-imdb.csv")
-
-# dataset with list of genres and countries separated into individual rows
-
-df <- raw_data %>%
-  rename(country = 'Country Availability') %>%
-  rename(sOm ='Series or Movie') %>% 
-  mutate(movie = sOm =="Movie") %>%
-  # reformat release date to only the year
-  mutate(year = as.integer(substr(`Release Date`, 8, 12))) %>% 
-  # exclude years with close to no entries
-  filter(year > 1965 & year < 2020) %>% 
-  select(Genre, year, Title, country, movie) %>%
-  drop_na()
-
-a <- df %>%
-  select(Genre, year, Title) %>% 
-  separate_rows(Genre, sep = ", ") %>%
-  distinct(.keep_all = TRUE)
-
-b <- df %>%
-  select(year, Title, country) %>% 
-  separate_rows(country, sep = ",") %>%
-  distinct(.keep_all = TRUE)
-
-data_expanded <- full_join(a, b, by = c("year", "Title"))
-write.csv(data_expanded , file = "Data\\data_expanded.csv", row.names = FALSE)
-
-# dataset with list of genres separated into individual rows
-data_genre <- data_expanded %>%
-  group_by(Genre, year, Title) %>%
-  summarise(country = paste(country, collapse = ", ")) 
-write.csv(data_genre , file = "Data\\data_genre.csv", row.names = FALSE)
-
-# dataset with list of countries separated into individual rows
-data_country <- data_expanded %>%
-  group_by(country, year, Title) %>%
-  summarise(Genre = paste(Genre, collapse = ", "))
-write.csv(data_country , file = "Data\\data_country.csv", row.names = FALSE)
-
-# dataset to work with throughout the analysis
-data_basic <- data_genre %>%
-  group_by(country, year, Title) %>%
-  summarise(Genre = paste(Genre, collapse = ", "))
-write.csv(data_basic , file = "Data\\data_basic.csv", row.names = FALSE)
-```
-
 
 ## Explorative Datenanalyse
 
