@@ -144,7 +144,7 @@ Inhalte in fast allen Ländern verfügbar sind. Dem ist aber nicht so:
 ![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 Tatsächlich ist ein Großteil der Medien nur in einem einzigen Land
 abrufbar, das Angebot von Netflix scheint also recht speziell auf
-einzelne Länder zugeschnitten zu sein. Nur im Bereich von knapp 35
+einzelne Länder zugeschnitten zu sein. Nur im Bereich von knapp 36
 Ländern ist ein kleinerer Spike mit fast 1500 sehr international
 verfügbaren Inhalten.
 
@@ -154,7 +154,6 @@ dem Veröffentlichungsdatum vergleichen.
 
 ![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
-<<<<<<< HEAD
 Hier sehen wir eine interessante Korrelation, die auf eine stärkere
 Internationalität hinweist, je neuer der Inhalt ist. Dieser Effekt ist
 noch deutlicher sichtbar, wenn wir die automatische Annährungskurve von
@@ -162,23 +161,16 @@ R in den Graphen legen. Diese wird mit einer lokalen polynomiellen
 Regression (loess) erzeugt, worauf wir uns aber nicht konzentrieren
 werden \[QUELLE????\]
 
-![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
 Zuletzt untersuchen wir noch die Genres. Hier fallen starke Unterschiede
 zwischen den beliebtesten Genres gegenüber den am wenigsten vorkommenden
 Genres auf.
-![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
-=======
-Zuletzt untersuchen wir noch die Genres
-![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
-
-und die Genres im zeitlichen Verlauf:
 ![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
->>>>>>> 4e955870f85efd5ed79d79498aa4c26ee9b682ce
 
 Wenn wir nun die Genres im zeitlichen Verlauf angucken, bekommen wir ein
 interessantes Bild:
-![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
 Trotz (bzw. sogar wegen) des Overplotting sehen wir klar: Mit
 zunehmender Jahreszahl gibt es mehr Genres und die einzelnen Genres
@@ -186,11 +178,7 @@ tendieren dazu einen kleineren Anteil auszumachen, denn die Punkte
 liegen rechts unten im Plot am dichtesten. Zählen wir die Genres pro
 Jahr erhalten wir einen annähernd linearen Zusammenhang:
 
-<<<<<<< HEAD
-![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
-=======
-![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
->>>>>>> 4e955870f85efd5ed79d79498aa4c26ee9b682ce
+![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
 Allerdings wird in unserem Datensatz ein Film/einer Serie i.d.R.
 mehreren Genres zugeordnet. Liegt der Zusammenhang also eventuell daran,
@@ -198,11 +186,7 @@ dass neuere Inhalte einfach mehr unterschiedlichen Genres zugeordnet
 werden? Um das zu beantworten plotten wir die durchschnittliche Zahl der
 Genres, denen ein Medium in einem gegebenen Jahr zugeordnet wird:
 
-<<<<<<< HEAD
-![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
-=======
-![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
->>>>>>> 4e955870f85efd5ed79d79498aa4c26ee9b682ce
+![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
 Anhand des Plots lässt sich diese Vermutung widerlegen, denn die Zahl
 der Genres ist fast immer zwischen 2.5 und .5. Lediglich vor 1980 sieht

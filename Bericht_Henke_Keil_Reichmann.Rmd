@@ -225,7 +225,7 @@ data_country %>%
        x = "In so vielen Ländern verfügbar",
        y = "Anzahl Filme & Serien")
 ```
-Tatsächlich ist ein Großteil der Medien nur in einem einzigen Land abrufbar, das Angebot von Netflix scheint also recht speziell auf einzelne Länder zugeschnitten zu sein. Nur im Bereich von knapp 35 Ländern ist ein kleinerer Spike mit fast 1500 sehr international verfügbaren Inhalten.
+Tatsächlich ist ein Großteil der Medien nur in einem einzigen Land abrufbar, das Angebot von Netflix scheint also recht speziell auf einzelne Länder zugeschnitten zu sein. Nur im Bereich von knapp 36 Ländern ist ein kleinerer Spike mit fast 1500 sehr international verfügbaren Inhalten.
 
 Sind diese sehr internationalen Inhalte möglicherweise die neueren Inhalte auf Netflix? Deshalb wollen wir mal die Internationalität mit dem Veröffentlichungsdatum vergleichen. 
 
