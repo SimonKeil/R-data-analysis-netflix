@@ -185,7 +185,7 @@ Zunächst schauen wir uns ein paar allgemeine Zahlen zu unserem (aufgeräumten) 
 ```{r}
 summary(data_basic$year)
 ```
-Wir beobachten zum einen, dass nur noch Werte von 1961 bis 2019 im Datensatz sind (wie oben begründet) und zum anderen, dass sehr viele Filme aus den letzten Jahren stammen, allein 25% aus den Jahren 2017 bis 2019.
+Wir beobachten zum einen, dass nur noch Werte von 1961 bis 2019 im Datensatz sind (wie oben begründet) und zum anderen, dass sehr viele Inhalte aus den letzten Jahren stammen, allein 25% aus den Jahren 2017 bis 2019.
 Diese Beobachtung sieht man auch, wenn man die Zahl der Filme in dem jeweiligen Veröffentlichungsjahr darstellt. Da der Zusammenhang annährend exponentiell ist, ist die Anzahl im Plot mit einer logarithmischen Skala versehen.
 ```{r}
 data_basic %>% 
@@ -194,7 +194,7 @@ data_basic %>%
   geom_point() +
   scale_y_log10() +
   labs(x = "Veröffentlichungsjahr",
-    y = "Anzahl der Filme")
+    y = "Anzahl der Inhalte")
 ```
 
 Nun schauen wir uns die Länder in unserem Datensatz etwas genauer an. Es gibt 
@@ -209,23 +209,23 @@ data_country %>%
   select(n, country)%>%
   ggplot(aes(x = n, y = reorder(country, n)))+
   geom_point()+
-  labs(title = "Anzahl verfügbarer Filme in den Ländern",
-       x = "Anzahl der Filme", 
+  labs(title = "Anzahl verfügbarer Filme & Serien in den Ländern",
+       x = "Anzahl der Inhalte", 
        y = "Land")
 ```
 
-Man sieht, dass es starke Unterschiede zwischen den einzelnen Ländern gibt und dass keine Gruppenbildung in z.B. Länder mit sehr viel und Ländern mit weniger Filmtiteln zu erkennen ist.
+Man sieht, dass es starke Unterschiede zwischen den einzelnen Ländern gibt und dass keine Gruppenbildung in z.B. Länder mit sehr viel und Ländern mit weniger Medien zu erkennen ist.
 
-Eine naheliegende Folgerung wäre, dass die Auswahl an Filmen in vielen Ländern ähnlich ist. Das würde bedeuten, dass die meisten Filme in fast allen Ländern verfügbar sind.
+Eine naheliegende Folgerung wäre, dass die Auswahl an Filmen und Serien in vielen Ländern ähnlich ist. Das würde bedeuten, dass die meisten Inhalte in fast allen Ländern verfügbar sind.
 Dem ist aber nicht so:
 ```{r}
 data_country %>% 
   count(Title, year) %>%
   ggplot(mapping = aes(x = n)) +
   geom_histogram(boundary = 0, bins = 36) +
-  labs(title = "In wievielen Ländern sind Filme verfügbar?",
+  labs(title = "In wievielen Ländern sind Inhalte verfügbar?",
        x = "in so vielen Ländern verfügbar",
-       y = "Anzahl Filme")
+       y = "Anzahl Filme & Serien")
 ```
 Tatsächlich ist ein Großteil der Medien nur in einem einzigen Land abrufbar, das Angebot von netflix scheint also recht speziell auf einzelne Länder zugeschnitten zu sein.
 
@@ -236,7 +236,7 @@ _Ebenfalls spannend, evtl. als erweiterung zu Simons Idee (~Daniel)_
 Netflix wird immer internationaler und hat mehr und mehr Eigenproduktionen. Führt das auf lange Sicht auf ein einheitlicheres Netflix, das weniger regionale Unterschiede hat? Sind die neusten Veröffentlichungen auf Netflix in mehr Ländern verfügbar?
 
 
-Zunächst schauen wir uns die Film basierend auf ihr ursprüngliches Veröffentlichungsjahr an, wobei wir ähnlich wie oben nur Filme zwischen 1960 und 2021 betrachten. Hier sehen wir eine interessante Kurve, insbesondere wenn wir die in R eingebaute, automatische Glättungskurve einbauen.
+Zunächst schauen wir uns die Inhalte basierend auf ihr ursprüngliches Veröffentlichungsjahr an, wobei wir ähnlich wie oben nur Filme und Serien zwischen 1960 und 2021 betrachten. Hier sehen wir eine interessante Kurve, insbesondere wenn wir die in R eingebaute, automatische Glättungskurve einbauen.
 
 ```{r}
 countriesPerYear <- data_country %>% 
@@ -248,9 +248,9 @@ countriesPerYear%>%
   ggplot(aes(x = year, y = number)) +
   geom_point() +
   geom_smooth()+
-  labs(title = "Länder pro Film im zeitlichen Verlauf",
-       y = "Durchschnittliche Zahl der Länder pro Film",
-       x = "Veröffentlichungsjahr des Films")
+  labs(title = "Länder pro Inhalte im zeitlichen Verlauf",
+       y = "Durchschnittliche Zahl der Länder pro Inhalt",
+       x = "Veröffentlichungsjahr")
 ```
 
 Zuletzt untersuchen wir noch die Genres
@@ -262,7 +262,7 @@ data_genre %>%
   geom_bar(stat = 'identity') +
   labs(title = "Ranking der Genres",
     x = "Genre",
-    y = "Anzahl der Filme") +  coord_flip()
+    y = "Anzahl der Inhalte") +  coord_flip()
 ```
 
 und die Genres im zeitlichen Verlauf: 
@@ -290,12 +290,12 @@ count_genre_vs_year <- data_genre %>%
 count_genre_vs_year %>%
   ggplot(aes(x = year, y = n)) +
   geom_point() +
-  labs(title = "Anzahl der Genres in denen Filme verfügbar sind nach Veröffentlichungsjahr",
+  labs(title = "Anzahl der Genres, in denen Inhalte verfügbar sind nach Veröffentlichungsjahr",
        x = "Veröffentlichungsjahr",
        y = "Anzahl der Genres")
 ```
 
-Allerdings wird in unserem Datensatz ein Film i.d.R. mehreren Genres zugeordnet. Liegt der Zusammenhang also eventuell daran, dass neuere Filme einfach mehr unterschiedlichen Genres zugeordnet werden? Um das zu beantworten plotten wir die durchschnittliche Zahl der Genres denen ein Film in einem gegebenen Jahr zugeordnet wird:
+Allerdings wird in unserem Datensatz ein Film/einer Serie i.d.R. mehreren Genres zugeordnet. Liegt der Zusammenhang also eventuell daran, dass neuere Inhalte einfach mehr unterschiedlichen Genres zugeordnet werden? Um das zu beantworten plotten wir die durchschnittliche Zahl der Genres, denen ein Medium in einem gegebenen Jahr zugeordnet wird:
 
 ```{r}
 data_genre %>%
@@ -304,12 +304,12 @@ data_genre %>%
   summarise(number = mean(n)) %>% 
   ggplot(aes(x = year, y = number)) +
   geom_point() +
-  labs(title = "Genres pro Film im zeitlichen Verlauf",
-       y = "Durchschnittliche Zahl der Genres pro Film",
+  labs(title = "Genres pro Inhalt im zeitlichen Verlauf",
+       y = "Durchschnittliche Zahl der Genres pro Inhalt",
        x = "Jahr")
 ```
 
-Anhand des Plots lässt sich diese Vermutung widerlegen, denn die Zahl der Genres ist fast immer zwischen 2.5 und .5, lediglich vor 1980 sieht man etwas stärkere Schwankungen die vermutlich darauf zurückzuführen ist, dass in diesen Jahren die Zahl der Filme die verfügbar sind relativ klein ist. In den Filmen der letzten Jahre ist sogar eher ein Abwärtstrend erkennbar.
+Anhand des Plots lässt sich diese Vermutung widerlegen, denn die Zahl der Genres ist fast immer zwischen 2.5 und .5, lediglich vor 1980 sieht man etwas stärkere Schwankungen die vermutlich darauf zurückzuführen ist, dass in diesen Jahren die Zahl der Filme und Serien, die verfügbar sind, relativ klein ist. In den Filmen der letzten Jahre ist sogar eher ein Abwärtstrend erkennbar.
  
 
 ## Literatur
