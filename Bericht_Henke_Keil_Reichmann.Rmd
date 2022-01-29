@@ -236,31 +236,32 @@ data_country %>%
 ```
 Tatsächlich ist ein Großteil der Medien nur in einem einzigen Land abrufbar, das Angebot von Netflix scheint also recht speziell auf einzelne Länder zugeschnitten zu sein. Nur im Bereich von knapp 35 Ländern ist ein kleinerer Spike mit fast 1500 sehr international verfügbaren Inhalten.
 
-__Untersuchung Internationalität vs. Veröffentlichungsjahr__
-
-_Ebenfalls spannend, evtl. als erweiterung zu Simons Idee (~Daniel)_
-
-Netflix wird immer internationaler und hat mehr und mehr Eigenproduktionen. Führt das auf lange Sicht auf ein einheitlicheres Netflix, das weniger regionale Unterschiede hat? Sind die neusten Veröffentlichungen auf Netflix in mehr Ländern verfügbar?
-
-
-Zunächst schauen wir uns die Inhalte basierend auf ihr ursprüngliches Veröffentlichungsjahr an, wobei wir ähnlich wie oben nur Filme und Serien zwischen 1960 und 2021 betrachten. Hier sehen wir eine interessante Kurve, insbesondere wenn wir die in R eingebaute, automatische Glättungskurve einbauen.
+Sind diese sehr internationalen Inhalte möglicherweise die neueren Inhalte auf Netflix? Deshalb wollen wir mal die Internationalität mit dem Veröffentlichungsdatum vergleichen. 
 
 ```{r}
-countriesPerYear <- data_country %>% 
+timeVSinternational <- data_country %>% 
   count(Title, year) %>%
   group_by(year) %>% 
-  summarise(number = mean(n)) 
-
-countriesPerYear%>%
+  summarise(number = mean(n)) %>%
   ggplot(aes(x = year, y = number)) +
   geom_point() +
-  geom_smooth()+
   labs(title = "Länder pro Inhalte im zeitlichen Verlauf",
        y = "Durchschnittliche Zahl der Länder pro Inhalt",
        x = "Veröffentlichungsjahr")
+
+timeVSinternational
 ```
 
-Zuletzt untersuchen wir noch die Genres
+Hier sehen wir eine interessante Korrelation, die auf eine stärkere Internationalität hinweist, je neuer der Inhalt ist. Dieser Effekt ist noch deutlicher sichtbar, wenn wir die automatische Annährungskurve von R in den Graphen legen. Diese wird mit einer lokalen polynomiellen Regression (loess) erzeugt, worauf wir uns aber nicht konzentrieren werden [QUELLE????]
+
+
+```{r}
+timeVSinternational + geom_smooth()
+```
+
+
+
+Zuletzt untersuchen wir noch die Genres. Hier fallen starke Unterschiede zwischen den beliebtesten Genres gegenüber den am wenigsten vorkommenden Genres auf.
 ```{r}
 data_genre %>%
   count(Genre) %>% 
@@ -272,7 +273,8 @@ data_genre %>%
     y = "Anzahl der Inhalte") +  coord_flip()
 ```
 
-und die Genres im zeitlichen Verlauf: 
+
+Wenn wir nun die Genres im zeitlichen Verlauf angucken, bekommen wir ein interessantes Bild:
 ```{r}
 year_per_genre <- data_genre %>%
   count(year, Genre)
