@@ -62,9 +62,9 @@ Dadurch ist die Auswahl, welche Inhalte auf Netflix verfügbar sind und wie dies
 
 Hierzu haben wir Daten von Kaggle, genauer gesagt von Ashish Gupta, unter https://www.kaggle.com/ashishgup/netflix-rotten-tomatoes-metacritic-imdb. Da es keine offizielle Netflix API gibt, wurden hier Daten von mehreren verschiedenen APIs und Seiten wie "Rotten Tomatoes", "iMDB" und weiteren Quellen zusammengetragen. Zudem hat er eine eigene Metrik, den "Hidden Gem Score", hinzugefügt, der aus den Daten Geheimtipps ermitteln soll. Diesen haben wir aber für unsere Betrachtungen nicht beachtet.
 
-Im Datensatz finden sich 29 Variablen pro Film, die vom Titel über verschiedene Genre-Variablen bis hin zu Regisseur und Schauspieler reichen. Ebenfalls verfügbar ist die Länge des Filmes, verschiedene Bewertungsmetriken (von IMDb, Rotten Tomatoes, Metacritic) und weitere Kenngrößen, mit denen wir uns nicht weiter befasst haben. Im folgenden haben wir uns vor allem auf das Veröffentlichungsjahr, das Genre und der Länderverfügbarkeit.
+Im Datensatz finden sich 29 Variablen pro Inhalt, die vom Titel über verschiedene Genre-Variablen bis hin zu Regisseur und Schauspieler reichen. Ebenfalls verfügbar sind die verfügbaren Sprachen, verschiedene Bewertungsmetriken (von IMDb, Rotten Tomatoes, Metacritic) und weitere Kenngrößen, mit denen wir uns nicht weiter befasst haben. Im folgenden haben wir uns vor allem auf das Veröffentlichungsjahr, das Genre und der Länderverfügbarkeit.
 
-Da die Daten aus unterschidlichen Quellen kommen und somit sehr heterogen sind, sind manche Variablen vertrauenswürdiger als andere. Zum Teil scheinen die Sprachen nicht akurat zu sein, auch Sprachen wie "Latin" werden genannt, die wir in keinem Film auf Netflix finden konnten. Wir vermuten Übersetzungsfehler, können aber den Fehlerursprung nicht eindeutig ermitteln. Zum Teil sind auch bei Zusammenfügen der Daten aus verschiedenen Quellen Fehler aufgetreten. So ist vermutlich bei der Serie "Barberen??????" die Netflix-Serie deutscher Herkunft mit dem iMDB-Eintrag tschechischen Film ???? aus 20?? verbunden wurden. Die Daten sind zum Teil von der Serie, zum Teil vom Film.
+Da die Daten aus unterschiedlichen Quellen kommen und somit sehr heterogen sind, sind manche Variablen vertrauenswürdiger als andere. Zum Teil scheinen die Sprachen nicht akkurat zu sein, auch Sprachen wie "Latin" werden genannt, die wir in keinem Film auf Netflix finden konnten. Wir vermuten Übersetzungsfehler, können aber den Fehlerursprung nicht eindeutig ermitteln. Zum Teil sind auch bei Zusammenfügen der Daten aus verschiedenen Quellen Fehler aufgetreten. So ist vermutlich bei der Serie "Barberen??????" die Netflix-Serie deutscher Herkunft mit dem iMDB-Eintrag tschechischen Film ???? aus 20?? verbunden wurden. Die Daten sind zum Teil von der Serie, zum Teil vom Film.
 
 Da dies aber (nach unserem Wissen) Einzelfälle sind und es zu diesem Thema kaum bis keine besseren Daten gibt, haben wir trotz dieser Probleme dieses Datenset verwendet.
 
@@ -179,14 +179,17 @@ write.csv(data_basic , file = "Data\\data_basic.csv", row.names = FALSE)
 
 ## Explorative Datenanalyse
 
-*Anmerkung zu Beginn der Analyse:* Wir lesen vor der eigentlichen Auswertung die Daten ein und reduzieren sie auf den Grund-Datenbestand, den wir im Folgenden nutzen wollen: Die Spalten mit dem Titel, Genres, Veröffentlichungsdatum und Länder Verfügbarkeit. Dabei enfernen wir zudem alle Zeilen in denen Angaben fehlen sowie die Filme/Serien mit Veröffentlichungsdatum vor 1965 und nach 2020, da in diesen Jahren nur sehr wenige Einträge vorhanden sind, sodass keine sinvollen Aussagen getroffen werden können.
+*Anmerkung zu Beginn der Analyse:* Wir lesen vor der eigentlichen Auswertung die Daten ein und reduzieren sie auf den Grund-Datenbestand, den wir im Folgenden nutzen wollen: Die Spalten mit dem Titel, Genres, Veröffentlichungsdatum und Länder Verfügbarkeit. Dabei entfernen wir zudem alle Zeilen, in denen Angaben fehlen, sowie die Filme/Serien mit Veröffentlichungsdatum vor 1965 und nach 2020. In diesen Jahren sind nämlich nur sehr wenige Einträge vorhanden, sodass keine sinnvollen Aussagen getroffen werden können.
 
 Zunächst schauen wir uns ein paar allgemeine Zahlen zu unserem (aufgeräumten) Datensatz an. Wir beginnen mit einer statistischen Übersicht zu den Veröffentlichungsjahren:
+
 ```{r}
 summary(data_basic$year)
 ```
+
 Wir beobachten zum einen, dass nur noch Werte von 1961 bis 2019 im Datensatz sind (wie oben begründet) und zum anderen, dass sehr viele Inhalte aus den letzten Jahren stammen, allein 25% aus den Jahren 2017 bis 2019.
-Diese Beobachtung sieht man auch, wenn man die Zahl der Filme in dem jeweiligen Veröffentlichungsjahr darstellt. Da der Zusammenhang annährend exponentiell ist, ist die Anzahl im Plot mit einer logarithmischen Skala versehen.
+Diese Beobachtung sieht man auch, wenn man die Zahl der Filme in dem jeweiligen Veröffentlichungsjahr darstellt. Da der Zusammenhang annähernd exponentiell ist, ist die Anzahl im Plot mit einer logarithmischen Skala versehen.
+
 ```{r}
 data_basic %>% 
   count(year) %>% 
@@ -201,7 +204,7 @@ Nun schauen wir uns die Länder in unserem Datensatz etwas genauer an. Es gibt
 ```{r}
 (data_country %>% distinct(country) %>% count())$n
 ```
-Länder in unserem Datensatz. Eine interessante Kenngröße ist, wieviele Filme und Serien es jeweils in den Ländern gibt.
+Länder in unserem Datensatz. Eine interessante Kenngröße ist, wie viele Filme und Serien es jeweils in den Ländern gibt.
 
 ```{r}
 data_country %>%
@@ -214,20 +217,21 @@ data_country %>%
        y = "Land")
 ```
 
-Man sieht, dass es starke Unterschiede zwischen den einzelnen Ländern gibt und dass keine Gruppenbildung in z.B. Länder mit sehr viel und Ländern mit weniger Medien zu erkennen ist.
+Man sieht, dass es starke Unterschiede zwischen den einzelnen Ländern gibt und dass keine Gruppierungen festzustellen sind.
 
-Eine naheliegende Folgerung wäre, dass die Auswahl an Filmen und Serien in vielen Ländern ähnlich ist. Das würde bedeuten, dass die meisten Inhalte in fast allen Ländern verfügbar sind.
+Eine nahe liegende Folgerung wäre, dass die Auswahl an Filmen und Serien in vielen Ländern ähnlich ist. Das würde bedeuten, dass die meisten Inhalte in fast allen Ländern verfügbar sind.
 Dem ist aber nicht so:
+
 ```{r}
 data_country %>% 
   count(Title, year) %>%
   ggplot(mapping = aes(x = n)) +
   geom_histogram(boundary = 0, bins = 36) +
   labs(title = "In wievielen Ländern sind Inhalte verfügbar?",
-       x = "in so vielen Ländern verfügbar",
+       x = "In so vielen Ländern verfügbar",
        y = "Anzahl Filme & Serien")
 ```
-Tatsächlich ist ein Großteil der Medien nur in einem einzigen Land abrufbar, das Angebot von netflix scheint also recht speziell auf einzelne Länder zugeschnitten zu sein.
+Tatsächlich ist ein Großteil der Medien nur in einem einzigen Land abrufbar, das Angebot von Netflix scheint also recht speziell auf einzelne Länder zugeschnitten zu sein. Nur im Bereich von knapp 35 Ländern ist ein kleinerer Spike mit fast 1500 sehr international verfügbaren Inhalten.
 
 __Untersuchung Internationalität vs. Veröffentlichungsjahr__
 
@@ -279,7 +283,7 @@ left_join(year_per_genre, year_genre_total, by = "year") %>%
     y = "Anzahl Genres")
 ```
 
-Trotz (bzw. sogar wegen) des Overplotting sehen wir klar: Mit zunehmender Jahreszahl gibt es mehr Genres und die einzelnen Genres tendieren dazu einen kleineren Anteil auszumachen, denn die Punkte liegen rechts unten im Plot am dichtesten. Zählen wir die Genres pro Jahr erhalten wir einen annährend linearen Zusammenhang:
+Trotz (bzw. sogar wegen) des Overplotting sehen wir klar: Mit zunehmender Jahreszahl gibt es mehr Genres und die einzelnen Genres tendieren dazu einen kleineren Anteil auszumachen, denn die Punkte liegen rechts unten im Plot am dichtesten. Zählen wir die Genres pro Jahr erhalten wir einen annähernd linearen Zusammenhang:
 
 ```{r}
 count_genre_vs_year <- data_genre %>%
@@ -309,7 +313,7 @@ data_genre %>%
        x = "Jahr")
 ```
 
-Anhand des Plots lässt sich diese Vermutung widerlegen, denn die Zahl der Genres ist fast immer zwischen 2.5 und .5, lediglich vor 1980 sieht man etwas stärkere Schwankungen die vermutlich darauf zurückzuführen ist, dass in diesen Jahren die Zahl der Filme und Serien, die verfügbar sind, relativ klein ist. In den Filmen der letzten Jahre ist sogar eher ein Abwärtstrend erkennbar.
+Anhand des Plots lässt sich diese Vermutung widerlegen, denn die Zahl der Genres ist fast immer zwischen 2.5 und .5. Lediglich vor 1980 sieht man etwas stärkere Schwankungen, die vermutlich darauf zurückzuführen ist, dass in diesen Jahren die Zahl der Filme und Serien, die verfügbar sind, relativ klein ist. In den Filmen der letzten Jahre ist sogar eher ein Abwärtstrend erkennbar.
  
 
 ## Literatur
