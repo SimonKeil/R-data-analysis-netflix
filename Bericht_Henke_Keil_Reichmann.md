@@ -144,7 +144,7 @@ Inhalte in fast allen Ländern verfügbar sind. Dem ist aber nicht so:
 ![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 Tatsächlich ist ein Großteil der Medien nur in einem einzigen Land
 abrufbar, das Angebot von Netflix scheint also recht speziell auf
-einzelne Länder zugeschnitten zu sein. Nur im Bereich von knapp 35
+einzelne Länder zugeschnitten zu sein. Nur im Bereich von knapp 36
 Ländern ist ein kleinerer Spike mit fast 1500 sehr international
 verfügbaren Inhalten.
 
