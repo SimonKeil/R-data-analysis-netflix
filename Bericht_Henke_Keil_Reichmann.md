@@ -71,42 +71,41 @@ Quellen zusammengetragen. Zudem hat er eine eigene Metrik, den “Hidden
 Gem Score”, hinzugefügt, der aus den Daten Geheimtipps ermitteln soll.
 Diesen haben wir aber für unsere Betrachtungen nicht beachtet.
 
-Im Datensatz finden sich 29 Variablen pro Film, die vom Titel über
+Im Datensatz finden sich 29 Variablen pro Inhalt, die vom Titel über
 verschiedene Genre-Variablen bis hin zu Regisseur und Schauspieler
-reichen. Ebenfalls verfügbar ist die Länge des Filmes, verschiedene
+reichen. Ebenfalls verfügbar sind die verfügbaren Sprachen, verschiedene
 Bewertungsmetriken (von IMDb, Rotten Tomatoes, Metacritic) und weitere
 Kenngrößen, mit denen wir uns nicht weiter befasst haben. Im folgenden
-haben wir uns vor allem auf das Veröffentlichungsjahr, das Genre und der
+haben wir uns vor allem auf das Veröffentlichungsjahr, das Genre und die
 Länderverfügbarkeit.
 
-Da die Daten aus unterschidlichen Quellen kommen und somit sehr
-heterogen sind, sind manche Variablen vertrauenswürdiger als andere. Zum
-Teil scheinen die Sprachen nicht akurat zu sein, auch Sprachen wie
-“Latin” werden genannt, die wir in keinem Film auf Netflix finden
-konnten. Wir vermuten Übersetzungsfehler, können aber den Fehlerursprung
-nicht eindeutig ermitteln. Zum Teil sind auch bei Zusammenfügen der
-Daten aus verschiedenen Quellen Fehler aufgetreten. So ist vermutlich
-bei der Serie “Barberen??????” die Netflix-Serie deutscher Herkunft mit
-dem iMDB-Eintrag tschechischen Film ???? aus 20?? verbunden wurden. Die
-Daten sind zum Teil von der Serie, zum Teil vom Film.
+Da die Daten aus unterschiedlichen Quellen kommen und somit sehr
+heterogen sind, sind manche Variablen vertrauenswürdiger als andere.
+Teilweise tauchen Filme und Serien öfters auf, um diese müssen wir uns
+speziell kümmern. Zum Teil scheinen die Sprachen nicht akkurat zu sein,
+auch Sprachen wie “Latin” werden genannt, die wir in keinem Film auf
+Netflix finden konnten. Wir vermuten Übersetzungsfehler, können aber den
+Fehlerursprung nicht eindeutig ermitteln. Manchmal sind auch bei
+Zusammenfügen der Daten aus verschiedenen Quellen Fehler aufgetreten. So
+ist vermutlich bei der Serie “Barbarians” die Netflix-Serie deutscher
+Herkunft mit dem iMDB-Eintrag tschechischen Film “Barbarians” (im
+Original “Varvari”) aus 2014 verbunden wurden. Die Daten sind zum Teil
+von der Serie, zum Teil vom Film.
 
 Da dies aber (nach unserem Wissen) Einzelfälle sind und es zu diesem
 Thema kaum bis keine besseren Daten gibt, haben wir trotz dieser
 Probleme dieses Datenset verwendet.
-
-Teilweise tauchen Filme öfter auf, um diese Duplikate müssen wir uns
-speziell kümmern.
 
 ## Explorative Datenanalyse
 
 *Anmerkung zu Beginn der Analyse:* Wir lesen vor der eigentlichen
 Auswertung die Daten ein und reduzieren sie auf den Grund-Datenbestand,
 den wir im Folgenden nutzen wollen: Die Spalten mit dem Titel, Genres,
-Veröffentlichungsdatum und Länder Verfügbarkeit. Dabei enfernen wir
-zudem alle Zeilen in denen Angaben fehlen sowie die Filme/Serien mit
-Veröffentlichungsdatum vor 1965 und nach 2020, da in diesen Jahren nur
-sehr wenige Einträge vorhanden sind, sodass keine sinvollen Aussagen
-getroffen werden können.
+Veröffentlichungsdatum und Länder Verfügbarkeit. Dabei entfernen wir
+zudem alle Zeilen, in denen Angaben fehlen, sowie die Filme/Serien mit
+Veröffentlichungsdatum vor 1965 und nach 2020. In diesen Jahren sind
+nämlich nur sehr wenige Einträge vorhanden, sodass keine sinnvollen
+Aussagen getroffen werden können.
 
 Zunächst schauen wir uns ein paar allgemeine Zahlen zu unserem
 (aufgeräumten) Datensatz an. Wir beginnen mit einer statistischen
@@ -120,8 +119,9 @@ Datensatz sind (wie oben begründet) und zum anderen, dass sehr viele
 Inhalte aus den letzten Jahren stammen, allein 25% aus den Jahren 2017
 bis 2019. Diese Beobachtung sieht man auch, wenn man die Zahl der Filme
 in dem jeweiligen Veröffentlichungsjahr darstellt. Da der Zusammenhang
-annährend exponentiell ist, ist die Anzahl im Plot mit einer
+annähernd exponentiell ist, ist die Anzahl im Plot mit einer
 logarithmischen Skala versehen.
+
 ![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
 Nun schauen wir uns die Länder in unserem Datensatz etwas genauer an. Es
@@ -129,22 +129,24 @@ gibt
 
     ## [1] 36
 
-Länder in unserem Datensatz. Eine interessante Kenngröße ist, wieviele
+Länder in unserem Datensatz. Eine interessante Kenngröße ist, wie viele
 Filme und Serien es jeweils in den Ländern gibt.
 
 ![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 Man sieht, dass es starke Unterschiede zwischen den einzelnen Ländern
-gibt und dass keine Gruppenbildung in z.B. Länder mit sehr viel und
-Ländern mit weniger Medien zu erkennen ist.
+gibt und dass keine Gruppierungen festzustellen sind.
 
-Eine naheliegende Folgerung wäre, dass die Auswahl an Filmen und Serien
+Eine nahe liegende Folgerung wäre, dass die Auswahl an Filmen und Serien
 in vielen Ländern ähnlich ist. Das würde bedeuten, dass die meisten
 Inhalte in fast allen Ländern verfügbar sind. Dem ist aber nicht so:
+
 ![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 Tatsächlich ist ein Großteil der Medien nur in einem einzigen Land
-abrufbar, das Angebot von netflix scheint also recht speziell auf
-einzelne Länder zugeschnitten zu sein.
+abrufbar, das Angebot von Netflix scheint also recht speziell auf
+einzelne Länder zugeschnitten zu sein. Nur im Bereich von knapp 35
+Ländern ist ein kleinerer Spike mit fast 1500 sehr international
+verfügbaren Inhalten.
 
 **Untersuchung Internationalität vs. Veröffentlichungsjahr**
 
@@ -173,7 +175,7 @@ Trotz (bzw. sogar wegen) des Overplotting sehen wir klar: Mit
 zunehmender Jahreszahl gibt es mehr Genres und die einzelnen Genres
 tendieren dazu einen kleineren Anteil auszumachen, denn die Punkte
 liegen rechts unten im Plot am dichtesten. Zählen wir die Genres pro
-Jahr erhalten wir einen annährend linearen Zusammenhang:
+Jahr erhalten wir einen annähernd linearen Zusammenhang:
 
 ![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
@@ -186,8 +188,8 @@ Genres, denen ein Medium in einem gegebenen Jahr zugeordnet wird:
 ![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
 Anhand des Plots lässt sich diese Vermutung widerlegen, denn die Zahl
-der Genres ist fast immer zwischen 2.5 und .5, lediglich vor 1980 sieht
-man etwas stärkere Schwankungen die vermutlich darauf zurückzuführen
+der Genres ist fast immer zwischen 2.5 und .5. Lediglich vor 1980 sieht
+man etwas stärkere Schwankungen, die vermutlich darauf zurückzuführen
 ist, dass in diesen Jahren die Zahl der Filme und Serien, die verfügbar
 sind, relativ klein ist. In den Filmen der letzten Jahre ist sogar eher
 ein Abwärtstrend erkennbar.
