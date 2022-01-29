@@ -142,6 +142,7 @@ in vielen Ländern ähnlich ist. Das würde bedeuten, dass die meisten
 Inhalte in fast allen Ländern verfügbar sind. Dem ist aber nicht so:
 
 ![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+
 Tatsächlich ist ein Großteil der Medien nur in einem einzigen Land
 abrufbar, das Angebot von Netflix scheint also recht speziell auf
 einzelne Länder zugeschnitten zu sein. Nur im Bereich von knapp 36
@@ -166,10 +167,12 @@ werden \[QUELLE????\]
 Zuletzt untersuchen wir noch die Genres. Hier fallen starke Unterschiede
 zwischen den beliebtesten Genres gegenüber den am wenigsten vorkommenden
 Genres auf.
+
 ![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 Wenn wir nun die Genres im zeitlichen Verlauf angucken, bekommen wir ein
 interessantes Bild:
+
 ![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
 Trotz (bzw. sogar wegen) des Overplotting sehen wir klar: Mit

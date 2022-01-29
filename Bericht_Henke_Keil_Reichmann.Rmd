@@ -74,8 +74,8 @@ Da dies aber (nach unserem Wissen) Einzelfälle sind und es zu diesem Thema kaum
 library("tidyverse")
 raw_data <- read_csv("Data/netflix-rotten-tomatoes-metacritic-imdb.csv")
 
-# dataset with list of genres and countries separated into individual rows
 
+# the Title together with the Year determine a Movie (or series) uniquely
 df <- raw_data %>%
   rename(country = 'Country Availability') %>%
   rename(sOm ='Series or Movie') %>% 
@@ -87,16 +87,21 @@ df <- raw_data %>%
   select(Genre, year, Title, country, movie) %>%
   drop_na()
 
+# unique film + Genre
 a <- df %>%
   select(Genre, year, Title) %>% 
   separate_rows(Genre, sep = ", ") %>%
   distinct(.keep_all = TRUE)
 
+# unique film + lcountry
 b <- df %>%
   select(year, Title, country) %>% 
   separate_rows(country, sep = ",") %>%
   distinct(.keep_all = TRUE)
 
+# a and b are joined, the unique films are acting as a key
+
+# dataset with list of genres and countries separated into individual rows
 data_expanded <- full_join(a, b, by = c("year", "Title")) %>%
   ungroup()
 
@@ -118,8 +123,9 @@ data_basic <- data_genre %>%
   summarise(Genre = paste(Genre, collapse = ", ")) %>%
   ungroup()
 ```
+
 ```{r eval=FALSE, include=FALSE}
-# wie bin ich mir duplikaten vorgegangen?
+# wie sind wir mit Duplikaten vorgegangen?
 
 # Es gibt vereinzelt Duplikate.
 raw_data %>%
@@ -127,47 +133,26 @@ raw_data %>%
   count(Title, `Release Date`)%>%
   filter(n>1)
 
-# das sind die Filme, die öfters auf Netflix released wurden
-# zB. wenn ein film schon auf Netflix war, und jetzt in zusätzlichen Ländern verfügbar ist.
+# das sind die Medien, die öfters auf Netflix released wurden
+# zB. wenn ein Film schon auf Netflix war, und jetzt in zusätzlichen Ländern verfügbar ist.
 raw_data%>%
   filter(Title == "A Love So Beautiful")
 
-# Lösung: - Titel, Year legt eine Zeile eindeutig fest
+# Lösung: 
+# Titel, Year legt eine Zeile eindeutig fest
+
 # spread_rows() nach genre und nach country (zwei einzelne tibbles)
 # es werden jeweils alle duplikate gelöscht
+
 # dann mit join wieder verbinden
 
-#die Spalten, die mich interessieren
-collumns <- raw_data %>%
-  rename(country = 'Country Availability') %>% 
-  # reformat release date to only the year
-  mutate(year = as.integer(substr(`Release Date`, 8, 12))) %>% 
-  # exclude years with close to no entries
-  filter(year > 1965 & year < 2020) %>% 
-  select(Genre, year, Title, country) %>%
-  drop_na()
-
-# eindeutiger film + genre
-col_genre <- collumns %>%
-  select(Genre, year, Title)%>% 
-  separate_rows(Genre, sep = ", ")%>%
-  distinct(.keep_all = TRUE)
-
-#eindeutiger film + land
-col_country <- collumns %>%
-  select(year, Title, country)%>% 
-  separate_rows(country, sep = ",")%>%
-  distinct(.keep_all = TRUE)
-
-# beide werden gejoint, dabei werden immer die zeilen der einduetigen filme verbunden
-final <- full_join(col_genre, col_country, by = c("year", "Title"))
 
 # hats geklappt? 
-col_genre%>%filter(Title == "Life")
-col_country%>%filter(Title == "Life")
-final%>%filter(Title == "Life")
-final
-final%>%drop_na()
+a%>%filter(Title == "Life")
+b%>%filter(Title == "Life")
+data_expanded%>%filter(Title == "Life")
+data_expanded
+data_expanded%>%drop_na()
 # jup :)
 ```
 
@@ -225,6 +210,7 @@ data_country %>%
        x = "In so vielen Ländern verfügbar",
        y = "Anzahl Filme & Serien")
 ```
+
 Tatsächlich ist ein Großteil der Medien nur in einem einzigen Land abrufbar, das Angebot von Netflix scheint also recht speziell auf einzelne Länder zugeschnitten zu sein. Nur im Bereich von knapp 36 Ländern ist ein kleinerer Spike mit fast 1500 sehr international verfügbaren Inhalten.
 
 Sind diese sehr internationalen Inhalte möglicherweise die neueren Inhalte auf Netflix? Deshalb wollen wir mal die Internationalität mit dem Veröffentlichungsdatum vergleichen. 
@@ -253,6 +239,7 @@ timeVSinternational + geom_smooth()
 
 
 Zuletzt untersuchen wir noch die Genres. Hier fallen starke Unterschiede zwischen den beliebtesten Genres gegenüber den am wenigsten vorkommenden Genres auf.
+
 ```{r}
 data_genre %>%
   count(Genre) %>% 
@@ -266,6 +253,7 @@ data_genre %>%
 
 
 Wenn wir nun die Genres im zeitlichen Verlauf angucken, bekommen wir ein interessantes Bild:
+
 ```{r}
 year_per_genre <- data_genre %>%
   count(year, Genre)
