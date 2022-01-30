@@ -216,7 +216,19 @@ Anhand des Plots lässt sich diese Vermutung widerlegen, denn die Zahl der Genre
  
 ## Methoden
 
-Den annähernd linearen Zusammenhang, auf den wir in der explorativen Analyse gestoßen sind, wollen wir genauer untersuchen. Hierfür gibt es die statistische Methode der linearen Regression.
+Den annähernd linearen Zusammenhang, auf den wir in der explorativen Analyse gestoßen sind, wollen wir genauer untersuchen. Hierfür gibt es die statistische Methode der linearen Regression. Grundlage dafür ist das lineare Regressionsmodell
+$$
+Y_i = \beta x_i + \alpha + \varepsilon_i \text{ für } 1 \leq i \leq n
+$$
+mit $n \in \mathbb{N}$ die Anzahl der Messwerte zu den Eingabestellen $x_i$, in unserem Fall die Jahreszahlen, und den beobachteten Zufallsvariablen $Y_i$, in unserem Fall die Anzahl der Genres, sowie den Fehlertermen $\varepsilon_i$ die normalverteilt sind mit Erwartungswert $0$ und unbekannter, endlicher Varianz.
+
+Um aus den Messwerten und den Beobachtungen der $Y_i$ die Koeffizienten $\alpha$ und $\beta$ des linearen Modells zu berechnen, kann man die Methode der kleinsten Quadrate benutzen, die die Summe der quadratischen Abweichungen minimiert. Für den theoretischen Zusammenhang der Koeffizienten mit empirischen Größen siehe [5], für eine in der Regel numerisch stabile Berechnung der Koeffizienten siehe [6].
+
+Da die tatsächliche Verteilung der Fehlerterme unbekannt ist, ist es sinnvoll die konkreten Fehlerterme auf Normalverteilung mit Erwartungswert $0$ hin zu untersuchen. Das bedeutet für gegebene Messwerte $y_i$ und $\alpha$, $\beta$ berechnet durch die Methode der kleinsten Quadrate, betrachten wir die Residuen $r_i = y_i - \beta x_i - \alpha$ und wollen überprüfen, ob diese als Realisierung einer $N(0,\sigma^2)$ verteilten Zufallsvariable plausibel sind. Hierfür gibt es den Shapiro-Wilk-Test, der auf Normalverteilung testet [7]. Er hat als Ausgabe eine Statistik $W$, die für unsere Zwecke aufgrund einer zu großen Stichprobe wenig interessant ist, und einen $p$-Wert, der angibt mit welcher Wahrscheinlichkeit man eine Stichprobe wie $e_i$ erhält, unter der Annahme einer Normalverteilung. Liegt der p-Wert nahe der Eins, kann man von einer Normalverteilung ausgehen. Als Schätzer für den Erwartungswert kann man das empirische Mittel verwenden, liegt dieses zusätzlich nahe der 0, kann man von der gewünschten $N(0,\sigma^2)$-Verteilung ausgehen. Als zusätzliches visuelles Kriterium für eine Normalverteilung kann außerdem ein Normal-Quantil-Plot angelegt werden.
+
+Hat man nun die Normalverteilung der Residuen festgestellt und so die Anwendung der linearen Regression gerechtfertigt, kann man nun die Güte der linearen Regression beurteilen. Eine Größe, die hierfür relevant ist, ist das Bestimmtheitsmaß $R^2$, das angibt, wie gut das Modell die Beobachtungen approximiert. Präziser: Welcher Teil der Varianz der beobachteten Werte durch das Modell erklärt werden kann, und welcher nicht erklärt werden kann, also von den $\varepsilon_i$ stammt. Ein Wert nahe der Eins spricht für eine gute Anpassung, ein Wert nahe der Null für eine schlechte.
+
+Zudem kann man zu den beiden Koeffizienten $\alpha$ und $\beta$ jeweils einen $p$-Wert bestimmen, der angibt, wie wahrscheinlich es ist die Beobachtung die gemacht wurde zu machen, unter der Annahme, dass kein Einfluss des Koeffizienten bestünde, also das dieser 0 sei. Ist der $p$-Wert klein kann man von einem Zusammenhang ausgehen. Analog funktioniert der $F$-Wert, der sich allerdings auf alle Koeffizienten simultan bezieht.
 
 ## Ergebnisse und Schlussfolgerungen
 ```{r}
@@ -235,6 +247,9 @@ residuals %>%
   stat_qq_line()
 
 shapiro.test(residuals$residual)
+mean(residuals$residual)
+
+summary(lm)
 ```
 
 
@@ -249,4 +264,6 @@ shapiro.test(residuals$residual)
 
 [5] Rolles, S. (2021). Einführung in die Wahrscheinlichkeitstheorie und Statistik. Vorlesungsskript TUM
 
-[6] Shapiro, S. S., & Wilk, M. B. (1965). An Analysis of Variance Test for Normality (Complete Samples). Biometrika, 52(3/4), 591–611. https://doi.org/10.2307/2333709
+[6] Bornemann, F. (2016). _Numerische lineare Algebra._ IV Kleinste Quadrate. https://doi.org/10.1007/978-3-658-24431-6
+
+[7] Shapiro, S. S., & Wilk, M. B. (1965). An Analysis of Variance Test for Normality (Complete Samples). Biometrika, 52(3/4), 591–611. https://doi.org/10.2307/2333709

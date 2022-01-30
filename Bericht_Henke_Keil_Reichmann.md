@@ -192,7 +192,38 @@ Genres.
 
 Den annähernd linearen Zusammenhang, auf den wir in der explorativen
 Analyse gestoßen sind, wollen wir genauer untersuchen. Hierfür gibt es
-die statistische Methode der linearen Regression.
+die statistische Methode der linearen Regression. Grundlage dafür ist
+das lineare Regressionsmodell
+*Y*<sub>*i*</sub> = *β**x*<sub>*i*</sub> + *α* + *ε*<sub>*i*</sub> für 1 ≤ *i* ≤ *n*
+mit *n* ∈ ℕ die Anzahl der Messwerte zu den Eingabestellen
+*x*<sub>*i*</sub>, in unserem Fall die Jahreszahlen, und den
+beobachteten Zufallsvariablen *Y*<sub>*i*</sub>, in unserem Fall die
+Anzahl der Genres, sowie den Fehlertermen *ε*<sub>*i*</sub> die
+Normalverteilt sind mit Erwartungswert 0 und unbekannter endlicher
+Varianz.
+
+Um aus den Messwerten und den Beobachtungen der *Y*<sub>*i*</sub> die
+Koeffizienten *α* und *β* des linearen Modells zu berechnen, kann man
+die Methode der kleinsten Quadrate benutzen, die die Summe der
+quadratischen Abweichungen minimiert. Für den theoretischen Zusammenhang
+der Koeffizienten mit empirischen Größen siehe \[5\], für eine in der
+Regel numerisch stabile Berechnung der Koeffizienten siehe \[6\].
+
+Da die tatsächliche Verteilung der Fehlerterme unbekannt ist, ist es
+sinnvoll die konkreten Fehlerterme auf Normalverteilung hin zu
+untersuchen. Das bedeutet für gegebene Messwerte *y*<sub>*i*</sub> und
+*α*, *β* berechnet durch die Methode der kleinsten Quadrate, betrachten
+wir *e*<sub>*i*</sub> = *y*<sub>*i*</sub> − *β**x*<sub>*i*</sub> − *α*
+und wollen überprüfen, ob dieser Vektor als Realisierung einer
+*N*(0,*σ*<sup>2</sup>) verteilten Zufallsvariable plausibel ist. Hierfür
+gibt es den Shapiro-Wilk-Test, für Details der Konstruktion siehe \[7\],
+der als Ausgabe eine Statistik *W* hat, die für unsere Zwecke aufgrund
+einer zu großen Stichprobe wenig interessant ist, und einen *p*-Wert
+hat, der angibt mit welcher Wahrscheinlichkeit man eine Stichprobe wie
+*e*<sub>*i*</sub> erhält unter der Annahme einer Normalverteilung. Liegt
+der p-Wert nahe der eins, kann man von einer Normalverteilung ausgehen.
+
+Um die Güte einer linearen Regression zu beurteilen
 
 ## Ergebnisse und Schlussfolgerungen
 
@@ -201,6 +232,8 @@ die statistische Methode der linearen Regression.
     ## 
     ## data:  residuals$residual
     ## W = 0.98732, p-value = 0.8357
+
+    ## [1] 2.105312e-15
 
 ![](Bericht_Henke_Keil_Reichmann_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
@@ -222,6 +255,9 @@ zur Erfolgsgeschichte des Streaming-Riesen*.
 \[5\] Rolles, S. (2021). Einführung in die Wahrscheinlichkeitstheorie
 und Statistik. Vorlesungsskript TUM
 
-\[6\] Shapiro, S. S., & Wilk, M. B. (1965). An Analysis of Variance Test
+\[6\] Bornemann, F. (2016). *Numerische lineare Algebra.* IV Kleinste
+Quadrate. <https://doi.org/10.1007/978-3-658-24431-6>
+
+\[7\] Shapiro, S. S., & Wilk, M. B. (1965). An Analysis of Variance Test
 for Normality (Complete Samples). Biometrika, 52(3/4), 591–611.
 <https://doi.org/10.2307/2333709>
