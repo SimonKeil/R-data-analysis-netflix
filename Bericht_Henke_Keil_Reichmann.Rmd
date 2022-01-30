@@ -62,14 +62,68 @@ Dadurch ist die Auswahl, welche Inhalte auf Netflix verfügbar sind und wie dies
 
 Hierzu haben wir Daten von Kaggle, genauer gesagt von Ashish Gupta, unter https://www.kaggle.com/ashishgup/netflix-rotten-tomatoes-metacritic-imdb. Da es keine offizielle Netflix API gibt, wurden hier Daten von mehreren verschiedenen APIs und Seiten wie "Rotten Tomatoes", "iMDB" und weiteren Quellen zusammengetragen. Zudem hat er eine eigene Metrik, den "Hidden Gem Score", hinzugefügt, der aus den Daten Geheimtipps ermitteln soll. Diesen haben wir aber für unsere Betrachtungen nicht beachtet.
 
-Aufgrund der Heterogenität der Daten sind manche Variablen vertrauenswürdiger als andere. Zum Teil scheinen die Sprachen nicht akurat zu sein, auch Sprachen wie "Latin" werden genannt, die wir in keinem Film auf Netflix finden konnten. Wir vermuten Übersetzungsfehler, können aber den Fehlerursprung nicht eindeutig ermitteln. Zum Teil sind auch bei Zusammenfügen der Daten aus verschiedenen Quellen Fehler aufgetreten. So ist vermutlich bei der Serie "Barberen??????" die Netflix-Serie deutscher Herkunft mit dem iMDB-Eintrag tschechischen Film ???? aus 20?? verbunden wurden. Die Daten sind zum Teil von der Serie, zum Teil vom Film.
+Im Datensatz finden sich 29 Variablen pro Inhalt, die vom Titel über verschiedene Genre-Variablen bis hin zu Regisseur und Schauspieler reichen. Ebenfalls verfügbar sind die verfügbaren Sprachen, verschiedene Bewertungsmetriken (von IMDb, Rotten Tomatoes, Metacritic) und weitere Kenngrößen, mit denen wir uns nicht weiter befasst haben. Im folgenden haben wir uns vor allem auf das Veröffentlichungsjahr, das Genre und die Länderverfügbarkeit.
+
+Da die Daten aus unterschiedlichen Quellen kommen und somit sehr heterogen sind, sind manche Variablen vertrauenswürdiger als andere. Teilweise tauchen Filme und Serien öfters auf, um diese müssen wir uns speziell kümmern. Zum Teil scheinen die Sprachen nicht akkurat zu sein, auch Sprachen wie "Latin" werden genannt, die wir in keinem Film auf Netflix finden konnten. Wir vermuten Übersetzungsfehler, können aber den Fehlerursprung nicht eindeutig ermitteln. Manchmal sind auch bei Zusammenfügen der Daten aus verschiedenen Quellen Fehler aufgetreten. So ist vermutlich bei der Serie "Barbarians" die Netflix-Serie deutscher Herkunft mit dem iMDB-Eintrag tschechischen Film "Barbarians" (im Original "Varvari") aus 2014 verbunden wurden. Die Daten sind zum Teil von der Serie, zum Teil vom Film.
 
 Da dies aber (nach unserem Wissen) Einzelfälle sind und es zu diesem Thema kaum bis keine besseren Daten gibt, haben wir trotz dieser Probleme dieses Datenset verwendet.
 
-Teilweise tauchen Filme öfter auf, um diese Duplikate müssen wir uns speziell kümmern.
+```{r, message=FALSE, echo=FALSE}
+library("tidyverse")
+raw_data <- read_csv("Data/netflix-rotten-tomatoes-metacritic-imdb.csv")
+
+
+# the Title together with the Year determine a Movie (or series) uniquely
+df <- raw_data %>%
+  rename(country = 'Country Availability') %>%
+  rename(sOm ='Series or Movie') %>% 
+  mutate(movie = sOm =="Movie") %>%
+  # reformat release date to only the year
+  mutate(year = as.integer(substr(`Release Date`, 8, 12))) %>% 
+  # exclude years with close to no entries
+  filter(year > 1965 & year < 2020) %>% 
+  select(Genre, year, Title, country, movie) %>%
+  drop_na()
+
+# unique film + Genre
+a <- df %>%
+  select(Genre, year, Title) %>% 
+  separate_rows(Genre, sep = ", ") %>%
+  distinct(.keep_all = TRUE)
+
+# unique film + lcountry
+b <- df %>%
+  select(year, Title, country) %>% 
+  separate_rows(country, sep = ",") %>%
+  distinct(.keep_all = TRUE)
+
+# a and b are joined, the unique films are acting as a key
+
+# dataset with list of genres and countries separated into individual rows
+data_expanded <- full_join(a, b, by = c("year", "Title")) %>%
+  ungroup()
+
+# dataset with list of genres separated into individual rows
+data_genre <- data_expanded %>%
+  group_by(Genre, year, Title) %>%
+  summarise(country = paste(country, collapse = ", ")) %>%
+  ungroup()
+
+# dataset with list of countries separated into individual rows
+data_country <- data_expanded %>%
+  group_by(country, year, Title) %>%
+  summarise(Genre = paste(Genre, collapse = ", ")) %>%
+  ungroup()
+
+# dataset to work with throughout the analysis
+data_basic <- data_genre %>%
+  group_by(country, year, Title) %>%
+  summarise(Genre = paste(Genre, collapse = ", ")) %>%
+  ungroup()
+```
+
 ```{r eval=FALSE, include=FALSE}
-library(tidyverse)
-# wie bin ich mir duplikaten vorgegangen?
+# wie sind wir mit Duplikaten vorgegangen?
 
 # Es gibt vereinzelt Duplikate.
 raw_data %>%
@@ -77,104 +131,28 @@ raw_data %>%
   count(Title, `Release Date`)%>%
   filter(n>1)
 
-# das sind die Filme, die öfters auf Netflix released wurden
-# zB. wenn ein film schon auf Netflix war, und jetzt in zusätzlichen Ländern verfügbar ist.
+# das sind die Medien, die öfters auf Netflix released wurden
+# zB. wenn ein Film schon auf Netflix war, und jetzt in zusätzlichen Ländern verfügbar ist.
 raw_data%>%
   filter(Title == "A Love So Beautiful")
 
-# Lösung: - Titel, Year legt eine Zeile eindeutig fest
+# Lösung: 
+# Titel, Year legt eine Zeile eindeutig fest
+
 # spread_rows() nach genre und nach country (zwei einzelne tibbles)
 # es werden jeweils alle duplikate gelöscht
+
 # dann mit join wieder verbinden
 
-#die Spalten, die mich interessieren
-collumns <- raw_data %>%
-  rename(country = 'Country Availability') %>% 
-  # reformat release date to only the year
-  mutate(year = as.integer(substr(`Release Date`, 8, 12))) %>% 
-  # exclude years with close to no entries
-  filter(year > 1965 & year < 2020) %>% 
-  select(Genre, year, Title, country) %>%
-  drop_na()
-
-# eindeutiger film + genre
-col_genre <- collumns %>%
-  select(Genre, year, Title)%>% 
-  separate_rows(Genre, sep = ", ")%>%
-  distinct(.keep_all = TRUE)
-
-#eindeutiger film + land
-col_country <- collumns %>%
-  select(year, Title, country)%>% 
-  separate_rows(country, sep = ",")%>%
-  distinct(.keep_all = TRUE)
-
-# beide werden gejoint, dabei werden immer die zeilen der einduetigen filme verbunden
-final <- full_join(col_genre, col_country, by = c("year", "Title"))
 
 # hats geklappt? 
-col_genre%>%filter(Title == "Life")
-col_country%>%filter(Title == "Life")
-final%>%filter(Title == "Life")
-final
-final%>%drop_na()
+a%>%filter(Title == "Life")
+b%>%filter(Title == "Life")
+data_expanded%>%filter(Title == "Life")
+data_expanded
+data_expanded%>%drop_na()
 # jup :)
 ```
-
-```{r, message=FALSE, echo=FALSE}
-library("tidyverse")
-data_basic <- read_csv("Data/data_basic.csv")
-data_genre <- read_csv("Data/data_genre.csv")
-data_country <- read_csv("Data/data_country.csv")
-data_expanded <- read_csv("Data/data_expanded.csv")
-```
-
-```{r eval=FALSE, include=FALSE}
-raw_data <- read_csv("Data/netflix-rotten-tomatoes-metacritic-imdb.csv")
-
-# dataset with list of genres and countries separated into individual rows
-
-df <- raw_data %>%
-  rename(country = 'Country Availability') %>% 
-  # reformat release date to only the year
-  mutate(year = as.integer(substr(`Release Date`, 8, 12))) %>% 
-  # exclude years with close to no entries
-  filter(year > 1965 & year < 2020) %>% 
-  select(Genre, year, Title, country) %>%
-  drop_na()
-
-a <- df %>%
-  select(Genre, year, Title) %>% 
-  separate_rows(Genre, sep = ", ") %>%
-  distinct(.keep_all = TRUE)
-
-b <- df %>%
-  select(year, Title, country) %>% 
-  separate_rows(country, sep = ",") %>%
-  distinct(.keep_all = TRUE)
-
-data_expanded <- full_join(a, b, by = c("year", "Title"))
-write.csv(data_expanded , file = "Data\\data_expanded.csv", row.names = FALSE)
-
-# dataset with list of genres separated into individual rows
-data_genre <- data_expanded %>%
-  group_by(Genre, year, Title) %>%
-  summarise(country = paste(country, collapse = ", ")) 
-write.csv(data_genre , file = "Data\\data_genre.csv", row.names = FALSE)
-
-# dataset with list of countries separated into individual rows
-data_country <- data_expanded %>%
-  group_by(country, year, Title) %>%
-  summarise(Genre = paste(Genre, collapse = ", "))
-write.csv(data_country , file = "Data\\data_country.csv", row.names = FALSE)
-
-# dataset to work with throughout the analysis
-data_basic <- data_genre %>%
-  group_by(country, year, Title) %>%
-  summarise(Genre = paste(Genre, collapse = ", "))
-write.csv(data_basic , file = "Data\\data_basic.csv", row.names = FALSE)
-```
-
 
 ## Explorative Datenanalyse
 
@@ -227,33 +205,31 @@ data_country %>%
        y = "Anzahl Filme")
 ```
 
-Tatsächlich ist ein Großteil der Medien nur in einem einzigen Land abrufbar, das Angebot von netflix scheint also recht speziell auf einzelne Länder zugeschnitten zu sein.
+Tatsächlich ist ein Großteil der Medien nur in einem einzigen Land abrufbar, das Angebot von Netflix scheint also recht speziell auf einzelne Länder zugeschnitten zu sein. Nur im Bereich von knapp 36 Ländern ist ein kleinerer Spike mit fast 1500 sehr international verfügbaren Inhalten.
 
-__Untersuchung Internationalität vs. Veröffentlichungsjahr__
-
-_Ebenfalls spannend, evtl. als erweiterung zu Simons Idee (~Daniel)_
-
-Netflix wird immer internationaler und hat mehr und mehr Eigenproduktionen. Führt das auf lange Sicht auf ein einheitlicheres Netflix, das weniger regionale Unterschiede hat? Sind die neusten Veröffentlichungen auf Netflix in mehr Ländern verfügbar?
-
-
-Zunächst schauen wir uns die Film basierend auf ihr ursprüngliches Veröffentlichungsjahr an, wobei wir ähnlich wie oben nur Filme zwischen 1960 und 2021 betrachten. Hier sehen wir eine interessante Kurve, insbesondere wenn wir die in R eingebaute, automatische Glättungskurve einbauen.
+Sind diese sehr internationalen Inhalte möglicherweise die neueren Inhalte auf Netflix? Deshalb wollen wir mal die Internationalität mit dem Veröffentlichungsdatum vergleichen.
 
 ```{r}
-countriesPerYear <- data_country %>% 
+(timeVSinternational <- data_country %>% 
   count(Title, year) %>%
   group_by(year) %>% 
-  summarise(number = mean(n)) 
-
-countriesPerYear%>%
+  summarise(number = mean(n)) %>%
   ggplot(aes(x = year, y = number)) +
   geom_point() +
-  geom_smooth()+
-  labs(title = "Länder pro Film im zeitlichen Verlauf",
-       y = "Durchschnittliche Zahl der Länder pro Film",
-       x = "Veröffentlichungsjahr des Films")
+  labs(title = "Länder pro Inhalte im zeitlichen Verlauf",
+       y = "Durchschnittliche Zahl der Länder pro Inhalt",
+       x = "Veröffentlichungsjahr"))
 ```
 
-Zuletzt untersuchen wir noch die Genres
+Hier sehen wir eine interessante Korrelation, die auf eine stärkere Internationalität hinweist, je neuer der Inhalt ist. Dieser Effekt ist noch deutlicher sichtbar, wenn wir die automatische Annährungskurve von R in den Graphen legen. Diese wird mit einer lokalen polynomiellen Regression (loess) erzeugt, worauf wir uns aber nicht konzentrieren werden [QUELLE????]
+
+
+```{r}
+timeVSinternational + geom_smooth()
+```
+
+Zuletzt untersuchen wir noch die Genres. Hier fallen starke Unterschiede zwischen den beliebtesten Genres gegenüber den am wenigsten vorkommenden Genres auf.
+
 ```{r}
 data_genre %>%
   count(Genre) %>% 
@@ -265,7 +241,8 @@ data_genre %>%
     y = "Anzahl der Filme") +  coord_flip()
 ```
 
-und die Genres im zeitlichen Verlauf: 
+Wenn wir nun die Genres im zeitlichen Verlauf angucken, bekommen wir ein interessantes Bild:
+
 ```{r}
 year_per_genre <- data_genre %>%
   count(year, Genre)
