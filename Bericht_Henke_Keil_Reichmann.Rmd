@@ -6,7 +6,6 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
-	echo = TRUE,
 	fig.show = "hold",
 	message = FALSE,
 	warning = FALSE,
@@ -30,39 +29,38 @@ Da die Daten aus unterschiedlichen Quellen kommen und somit sehr heterogen sind,
 
 Da dies aber (nach unserem Wissen) Einzelfälle sind und es zu diesem Thema kaum bis keine besseren Daten gibt, haben wir trotz dieser Probleme dieses Datenset verwendet. Um den Imperfektionen des Datensatzes zusätzlich aus dem Weg zu gehen, haben wir uns zudem auf Spalten konzentriert, die sehr vollständig sind und in denen uns keine offensichtlichen Inkonsistenzen aufgefallen sind.
 
-```{r, message=FALSE, echo=FALSE}
+## Explorative Datenanalyse
+
+*Anmerkung zu Beginn der Analyse:* Wir lesen vor der eigentlichen Auswertung die Daten ein und reduzieren sie auf den Grund-Datenbestand, den wir im Folgenden nutzen wollen: Die Spalten mit dem Titel, Genres, Veröffentlichungsdatum und Länder Verfügbarkeit. Dabei enfernen wir zudem alle Zeilen in denen Angaben fehlen sowie die Inhalte mit Veröffentlichungsdatum vor 1965 und nach 2020, da in diesen Jahren nur sehr wenige Einträge vorhanden sind, sodass keine sinnvollen Aussagen getroffen werden können. Zudem entfernen wir, wie oben angesprochen, Duplikate, indem wir Einträge mit gleichem Titel und Veröffentlichungsjahr zu einem Eintrag zusammenfassen.
+
+
+```{r}
 library("tidyverse")
 raw_data <- read_csv("Data/netflix-rotten-tomatoes-metacritic-imdb.csv")
 
-
-# the Title together with the Year determine a Movie (or series) uniquely
-df <- raw_data %>%
+data <- raw_data %>%
   rename(country = 'Country Availability') %>%
-  rename(sOm ='Series or Movie') %>% 
-  mutate(movie = sOm =="Movie") %>%
   # reformat release date to only the year
   mutate(year = as.integer(substr(`Release Date`, 8, 12))) %>% 
   # exclude years with close to no entries
   filter(year > 1965 & year < 2020) %>% 
-  select(Genre, year, Title, country, movie) %>%
+  select(Genre, year, Title, country) %>%
   drop_na()
 
-# unique film + Genre
-a <- df %>%
+# unique content + Genre
+content_genre <- data %>%
   select(Genre, year, Title) %>% 
   separate_rows(Genre, sep = ", ") %>%
   distinct(.keep_all = TRUE)
 
-# unique film + lcountry
-b <- df %>%
+# unique content + country
+content_country <- data %>%
   select(year, Title, country) %>% 
   separate_rows(country, sep = ",") %>%
   distinct(.keep_all = TRUE)
 
-# a and b are joined, the unique films are acting as a key
-
 # dataset with list of genres and countries separated into individual rows
-data_expanded <- full_join(a, b, by = c("year", "Title")) %>%
+data_expanded <- full_join(content_genre, content_country, by = c("year", "Title")) %>%
   ungroup()
 
 # dataset with list of genres separated into individual rows
@@ -84,48 +82,13 @@ data_basic <- data_genre %>%
   ungroup()
 ```
 
-```{r eval=FALSE, include=FALSE}
-# wie sind wir mit Duplikaten vorgegangen?
-
-# Es gibt vereinzelt Duplikate.
-raw_data %>%
-  group_by(Title, `Release Date`) %>%
-  count(Title, `Release Date`)%>%
-  filter(n>1)
-
-# das sind die Medien, die öfters auf Netflix released wurden
-# zB. wenn ein Film schon auf Netflix war, und jetzt in zusätzlichen Ländern verfügbar ist.
-raw_data%>%
-  filter(Title == "A Love So Beautiful")
-
-# Lösung: 
-# Titel, Year legt eine Zeile eindeutig fest
-
-# spread_rows() nach genre und nach country (zwei einzelne tibbles)
-# es werden jeweils alle duplikate gelöscht
-
-# dann mit join wieder verbinden
-
-
-# hats geklappt? 
-a%>%filter(Title == "Life")
-b%>%filter(Title == "Life")
-data_expanded%>%filter(Title == "Life")
-data_expanded
-data_expanded%>%drop_na()
-# jup :)
-```
-
-## Explorative Datenanalyse
-
-*Anmerkung zu Beginn der Analyse:* Wir lesen vor der eigentlichen Auswertung die Daten ein und reduzieren sie auf den Grund-Datenbestand, den wir im Folgenden nutzen wollen: Die Spalten mit dem Titel, Genres, Veröffentlichungsdatum und Länder Verfügbarkeit. Dabei enfernen wir zudem alle Zeilen in denen Angaben fehlen sowie die Filme/Serien mit Veröffentlichungsdatum vor 1965 und nach 2020, da in diesen Jahren nur sehr wenige Einträge vorhanden sind, sodass keine sinnvollen Aussagen getroffen werden können.
-
 Zunächst schauen wir uns ein paar allgemeine Zahlen zu unserem (aufgeräumten) Datensatz an. Wir beginnen mit einer statistischen Übersicht zu den Veröffentlichungsjahren:
 ```{r}
 summary(data_basic$year)
 ```
-Wir beobachten zum einen, dass nur noch Werte von 1961 bis 2019 im Datensatz sind (wie oben begründet) und zum anderen, dass sehr viele Filme aus den letzten Jahren stammen, allein 25% aus den Jahren 2017 bis 2019.
-Diese Beobachtung sieht man auch, wenn man die Zahl der Filme in dem jeweiligen Veröffentlichungsjahr darstellt. Da der Zusammenhang annährend exponentiell ist, ist die Anzahl im Plot mit einer logarithmischen Skala versehen.
+Wir beobachten zum einen, dass nur noch Werte von 1961 bis 2019 im Datensatz sind (wie oben begründet) und zum anderen, dass sehr viele Inhalte aus den letzten Jahren stammen, allein 25% aus den Jahren 2017 bis 2019.
+Diese Beobachtung sieht man auch, wenn man die Zahl der Inhalte in dem jeweiligen Veröffentlichungsjahr darstellt. Im Plot zeichnet sich sogar ab, dass die Zahl der Inhalte annährend exponentiell mit jüngerem Veröffentlichungsdatum steigt, weshalb die Anzahl im Plot mit einer logarithmischen Skala versehen ist.
+
 ```{r}
 data_basic %>% 
   count(year) %>% 
@@ -133,14 +96,13 @@ data_basic %>%
   geom_point() +
   scale_y_log10() +
   labs(x = "Veröffentlichungsjahr",
-    y = "Anzahl der Filme")
+    y = "Anzahl der Inhalte")
 ```
 
-Nun schauen wir uns die Länder in unserem Datensatz etwas genauer an. Es gibt 
-```{r}
+```{r, include=FALSE}
 (data_country %>% distinct(country) %>% count())$n
 ```
-Länder in unserem Datensatz. Eine interessante Kenngröße ist, wieviele Filme und Serien es jeweils in den Ländern gibt.
+Nun schauen wir uns die Länder in unserem Datensatz etwas genauer an. Es gibt 36 Länder in unserem Datensatz. Eine interessante Kenngröße, die wir für diese Länder betrachten können ist, wieviele Filme und Serien es jeweils in den Ländern gibt.
 
 ```{r}
 data_country %>%
@@ -148,49 +110,48 @@ data_country %>%
   select(n, country)%>%
   ggplot(aes(x = n, y = reorder(country, n)))+
   geom_point()+
-  labs(title = "Anzahl verfügbarer Filme in den Ländern",
-       x = "Anzahl der Filme", 
+  labs(title = "Anzahl verfügbarer Inhalte in den Ländern",
+       x = "Anzahl der Inhalte", 
        y = "Land")
 ```
 
-Man sieht, dass es starke Unterschiede zwischen den einzelnen Ländern gibt und dass keine Gruppenbildung in z.B. Länder mit sehr viel und Ländern mit weniger Filmtiteln zu erkennen ist.
+Man sieht, dass es starke Unterschiede zwischen den einzelnen Ländern gibt und dass keine Gruppenbildung in z.B. Länder mit sehr viel und Ländern mit weniger Inhalten zu erkennen ist. Eine naheliegende nächste Frage ist, wie sich die verschiedenen Anzahlen zusammensetzen, also ob sehr viele Inhalte in vielen Ländern verfügbar sind und im oberen Plot bei benachbarten Ländern sich das Angebot nur minimal unterscheidet, oder ob sich die Anzahl zwar wenig unterscheidet aber die tatsächlichen Inhalte stark.
+Betrachten wir die Anzahl der Länder in denen einzelne Inhalte verfügbar sind, wird deutlich, dass letzteres der Fall ist.
 
-Eine naheliegende Folgerung wäre, dass die Auswahl an Filmen in vielen Ländern ähnlich ist. Das würde bedeuten, dass die meisten Filme in fast allen Ländern verfügbar sind.
-Dem ist aber nicht so:
 ```{r}
 data_country %>% 
   count(Title, year) %>%
   ggplot(mapping = aes(x = n)) +
   geom_histogram(boundary = 0, bins = 36) +
-  labs(title = "In wievielen Ländern sind Filme verfügbar?",
-       x = "in so vielen Ländern verfügbar",
-       y = "Anzahl Filme")
+  labs(title = "Internationale Verfügbarkeit von Inhalten",
+       x = "Anzahl Länder",
+       y = "Anzahl Inhalte")
 ```
 
-Tatsächlich ist ein Großteil der Medien nur in einem einzigen Land abrufbar, das Angebot von Netflix scheint also recht speziell auf einzelne Länder zugeschnitten zu sein. Nur im Bereich von knapp 36 Ländern ist ein kleinerer Spike mit fast 1500 sehr international verfügbaren Inhalten.
+Tatsächlich ist ein Großteil der Medien nur in einem einzigen Land abrufbar, das Angebot von Netflix scheint also recht speziell auf einzelne Länder zugeschnitten zu sein. Nur ganz rechts im Plot sehen wir eine zweite Häufung mit rund 1500 sehr international verfügbaren Inhalten.
 
-Sind diese sehr internationalen Inhalte möglicherweise die neueren Inhalte auf Netflix? Deshalb wollen wir mal die Internationalität mit dem Veröffentlichungsdatum vergleichen.
+Im Bezug auf unsere Forschungsfrage besonders spannend ist die Frage, ob diese sehr internationalen Inhalte möglicherweise die neueren Inhalte auf Netflix sind. Wir betrachten also die Internationalität in Bezug auf das Veröffentlichungsdatum.
 
 ```{r}
-(timeVSinternational <- data_country %>% 
+data_country %>% 
   count(Title, year) %>%
   group_by(year) %>% 
   summarise(number = mean(n)) %>%
   ggplot(aes(x = year, y = number)) +
   geom_point() +
-  labs(title = "Länder pro Inhalte im zeitlichen Verlauf",
+  labs(title = "Internationalität im zeitlichen Verlauf",
        y = "Durchschnittliche Zahl der Länder pro Inhalt",
-       x = "Veröffentlichungsjahr"))
+       x = "Veröffentlichungsjahr") +
+  geom_smooth()
 ```
 
-Hier sehen wir eine interessante Korrelation, die auf eine stärkere Internationalität hinweist, je neuer der Inhalt ist. Dieser Effekt ist noch deutlicher sichtbar, wenn wir die automatische Annährungskurve von R in den Graphen legen. Diese wird mit einer lokalen polynomiellen Regression (loess) erzeugt, worauf wir uns aber nicht konzentrieren werden [QUELLE????]
+Hier sehen wir eine interessante Korrelation, die auf eine stärkere Internationalität hinweist, je neuer der Inhalt ist. Dieser Effekt wird auch durch die geplottete Glättungskurve deutlich. (Diese wird mit einer lokalen polynomiellen Regression (loess, siehe Dokumentation des stats-package) erzeugt, worauf wir aber hier nicht näher eingehen wollen.)
 
-
-```{r}
-timeVSinternational + geom_smooth()
+```{r, include=FALSE}
+(data_genre %>% distinct(Genre) %>% count())$n
 ```
 
-Zuletzt untersuchen wir noch die Genres. Hier fallen starke Unterschiede zwischen den beliebtesten Genres gegenüber den am wenigsten vorkommenden Genres auf.
+Zuletzt untersuchen wir noch die Genres. Dafür betrachten wir zuerst die Anzahl der Inhalte die in dem jeweiligen der 27 Genres verfügbar sind.
 
 ```{r}
 data_genre %>%
@@ -200,10 +161,12 @@ data_genre %>%
   geom_bar(stat = 'identity') +
   labs(title = "Ranking der Genres",
     x = "Genre",
-    y = "Anzahl der Filme") +  coord_flip()
+    y = "Anzahl der Inhalte") +  coord_flip()
 ```
 
-Wenn wir nun die Genres im zeitlichen Verlauf angucken, bekommen wir ein interessantes Bild:
+Wir beobeachten, dass Drama und Comedy die mit Abstand am weitesten verbeiteten Genres sind, und das nur die Hälfte der Genres überhaupt über 1000 zugeordnete Inhalte haben. Das bedeutet, dass es ein paar wenige Genres denen sehr viele Inhalte zugeordnet sind gibt und gleichzeitig eine große Breite an spezifischeren Genres mit weniger Inhalten.
+
+Um dieses Ranking der Genres nicht nur allgemein sondern abhängig vom Veröffentlichungsjahr zu visualisieren, schauen wir uns den Anteil der jeweiligen Genres an, den diese an allen Inhalten aus einem spezifischen Veröffentlichungsjahr haben. Wir bekommen folgendes interessantes Bild:
 
 ```{r}
 year_per_genre <- data_genre %>%
@@ -212,13 +175,14 @@ year_genre_total <- data_genre %>% count(year)
 left_join(year_per_genre, year_genre_total, by = "year") %>% 
   mutate(prop = n.x/n.y) %>% 
   ggplot(aes(x = year, y = prop, color = Genre)) +
-  geom_point() +
+  geom_point(size = 1) +
   labs(title = "Anzahl der verfügbaren Genres nach Veröffentlichungsjahr",
     x = "Veröffentlichungsjahr",
-    y = "Anzahl Genres")
+    y = "Anteil der Genres")
 ```
 
-Trotz (bzw. sogar wegen) des Overplotting sehen wir klar: Mit zunehmender Jahreszahl gibt es mehr Genres und die einzelnen Genres tendieren dazu einen kleineren Anteil auszumachen, denn die Punkte liegen rechts unten im Plot am dichtesten. Zählen wir die Genres pro Jahr erhalten wir einen annährend linearen Zusammenhang:
+Zum einen stechen erneut die beiden "Überflieger" Drama und Comedy ins Auge, die, mit wenigen Ausnahmen bei älteren Jahren, die beiden größten Anteile stellen. Des Weiteren fällt im unteren rechten Bereich das Auftreten von overplotting unangenehm auf. Doch trotz (bzw. sogar wegen) des overplotting ist erkennbar, dass es mit zunehmender Jahreszahl mehr Genres gibt und dass die einzelnen Genres dazu tendieren einen kleineren Anteil auszumachen, denn der Bereich unten rechts sind genau die jüngsten Jahre und die geringen Anteile.
+Wir visualisieren also die Daten auf eine neue Art und Weise, um den Effekt deutlicher und ohne overplotting herauszuarbeiten. Eine Möglichkeit wäre den durchschnittlichen Anteil gemittelt über alle Genres pro Jahr darzustellen. Wir wählen aber die reziproke Darstellung des selben Zusammenhangs, das heißt wir betrachten die Anzahl der Genres pro Veröffentlichungsjahr, in denen Inhalte verfügbar sind.
 
 ```{r}
 count_genre_vs_year <- data_genre %>%
@@ -229,12 +193,12 @@ count_genre_vs_year <- data_genre %>%
 count_genre_vs_year %>%
   ggplot(aes(x = year, y = n)) +
   geom_point() +
-  labs(title = "Anzahl der Genres in denen Filme verfügbar sind nach Veröffentlichungsjahr",
+  labs(title = "Anzahl der Genres in denen Inhalte verfügbar sind nach Veröffentlichungsjahr",
        x = "Veröffentlichungsjahr",
        y = "Anzahl der Genres")
 ```
 
-Allerdings wird in unserem Datensatz ein Film i.d.R. mehreren Genres zugeordnet. Liegt der Zusammenhang also eventuell daran, dass neuere Filme einfach mehr unterschiedlichen Genres zugeordnet werden? Um das zu beantworten plotten wir die durchschnittliche Zahl der Genres denen ein Film in einem gegebenen Jahr zugeordnet wird:
+Wir sehen einen annähernd linearen Zusammenhang, den wir im Folgenden näher untersuchen wollen. Davor wollen wir aber noch ausschließen, dass der Zusammenhang, den wir sehen, durch die Art unseres Datensatzes induziert wird und keinen echten Zusammenhang abbildet, denn in unserem Datensatz wird ein Film oder eine Serie in der Regel mehreren Genres zugeordnet. Es könnte also sein, dass neuere Inhalte einfach mehr unterschiedlichen Genres zugeordnet werden. Um das zu untersuchen, plotten wir die durchschnittliche Zahl der Genres denen ein Film oder eine Serie in einem gegebenen Jahr zugeordnet wird:
 
 ```{r}
 data_genre %>%
@@ -243,18 +207,36 @@ data_genre %>%
   summarise(number = mean(n)) %>% 
   ggplot(aes(x = year, y = number)) +
   geom_point() +
-  labs(title = "Genres pro Film im zeitlichen Verlauf",
-       y = "Durchschnittliche Zahl der Genres pro Film",
-       x = "Jahr")
+  labs(title = "Anzahl der Genres pro Inhalt im zeitlichen Verlauf",
+       y = "Durchschnittliche Zahl der Genres pro Inhalt",
+       x = "Veröffentlichungsjahr")
 ```
 
-Anhand des Plots lässt sich diese Vermutung widerlegen, denn die Zahl der Genres ist fast immer zwischen 2.5 und .5, lediglich vor 1980 sieht man etwas stärkere Schwankungen die vermutlich darauf zurückzuführen ist, dass in diesen Jahren die Zahl der Filme die verfügbar sind relativ klein ist. In den Filmen der letzten Jahre ist sogar eher ein Abwärtstrend erkennbar.
+Anhand des Plots lässt sich diese Vermutung widerlegen, denn die Zahl der Genres bewegt sich fast immer zwischen 2.5 und 3, mit wenigen Ausreißern. Bei den Inhalten der letzten Jahre ist sogar eher ein Abwärtstrend erkennbar, im Gegensatz zu dem Aufwärtstrend der Zahl der Genres.
  
 ## Methoden
 
 Den annähernd linearen Zusammenhang, auf den wir in der explorativen Analyse gestoßen sind, wollen wir genauer untersuchen. Hierfür gibt es die statistische Methode der linearen Regression.
 
 ## Ergebnisse und Schlussfolgerungen
+```{r}
+count_genre_vs_year <- data_genre %>%
+  select(Genre, year) %>% 
+  group_by(year) %>% 
+  distinct() %>% 
+  count(year)
+
+lm <- lm(count_genre_vs_year$n ~ count_genre_vs_year$year)
+residuals <- count_genre_vs_year %>%
+  mutate(residual = n - coef(lm)[1] - year * coef(lm)[2])
+residuals %>% 
+  ggplot(aes(sample = residual)) +
+  stat_qq() +
+  stat_qq_line()
+
+shapiro.test(residuals$residual)
+```
+
 
 ## Literatur
 [1] Statista Research Department (2021). _Netflix: Daten und Fakten zur Erfolgsgeschichte des Streaming-Riesen_. https://de.statista.com/themen/1840/netflix/
@@ -264,3 +246,7 @@ Den annähernd linearen Zusammenhang, auf den wir in der explorativen Analyse ge
 [3] Netflix. _How does Netflix license TV shows and movies?._ https://help.netflix.com/en/node/4976#:~:text=Netflix%20uses%20a%20variety%20of,shows%20and%20movies%20we%20suggest.
 
 [4] Ashish Gupta. _Daten._ https://www.kaggle.com/ashishgup/netflix-rotten-tomatoes-metacritic-imdb
+
+[5] Rolles, S. (2021). Einführung in die Wahrscheinlichkeitstheorie und Statistik. Vorlesungsskript TUM
+
+[6] Shapiro, S. S., & Wilk, M. B. (1965). An Analysis of Variance Test for Normality (Complete Samples). Biometrika, 52(3/4), 591–611. https://doi.org/10.2307/2333709
