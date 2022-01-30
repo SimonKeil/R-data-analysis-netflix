@@ -193,7 +193,7 @@ count_genre_vs_year <- data_genre %>%
 count_genre_vs_year %>%
   ggplot(aes(x = year, y = n)) +
   geom_point() +
-  labs(title = "Anzahl der Genres in denen Inhalte verfügbar sind nach Veröffentlichungsjahr",
+  labs(title = "Anzahl der Genres nach Veröffentlichungsjahr",
        x = "Veröffentlichungsjahr",
        y = "Anzahl der Genres")
 ```
@@ -228,30 +228,71 @@ Da die tatsächliche Verteilung der Fehlerterme unbekannt ist, ist es sinnvoll d
 
 Hat man nun die Normalverteilung der Residuen festgestellt und so die Anwendung der linearen Regression gerechtfertigt, kann man nun die Güte der linearen Regression beurteilen. Eine Größe, die hierfür relevant ist, ist das Bestimmtheitsmaß $R^2$, das angibt, wie gut das Modell die Beobachtungen approximiert. Präziser: Welcher Teil der Varianz der beobachteten Werte durch das Modell erklärt werden kann, und welcher nicht erklärt werden kann, also von den $\varepsilon_i$ stammt. Ein Wert nahe der Eins spricht für eine gute Anpassung, ein Wert nahe der Null für eine schlechte.
 
-Zudem kann man zu den beiden Koeffizienten $\alpha$ und $\beta$ jeweils einen $p$-Wert bestimmen, der angibt, wie wahrscheinlich es ist die Beobachtung die gemacht wurde zu machen, unter der Annahme, dass kein Einfluss des Koeffizienten bestünde, also das dieser 0 sei. Ist der $p$-Wert klein kann man von einem Zusammenhang ausgehen. Analog funktioniert der $F$-Wert, der sich allerdings auf alle Koeffizienten simultan bezieht.
+Zudem kann man zu den beiden Koeffizienten $\alpha$ und $\beta$ jeweils einen $p$-Wert bestimmen, der angibt, wie wahrscheinlich es ist die Beobachtung die gemacht wurde zu machen, unter der Annahme, dass kein Einfluss des Koeffizienten bestünde, also das dieser 0 sei. Ist der $p$-Wert klein kann man von einem Zusammenhang ausgehen. Analog funktioniert der $F$-Statistik, die sich allerdings auf alle Koeffizienten simultan bezieht. [8]
 
 ## Ergebnisse und Schlussfolgerungen
-```{r}
-count_genre_vs_year <- data_genre %>%
-  select(Genre, year) %>% 
-  group_by(year) %>% 
-  distinct() %>% 
-  count(year)
 
+Die oben beschriebenen Methoden wollen wir nun auf den beobachteten Zusammenhang zwischen Veröffentlichungsjahr unf Anzahl der Genres anwenden. Zunächst erstellen wir ein lineares Modell für die beiden Variablen:
+
+```{r}
+count_genre_vs_year %>%
+  ggplot(aes(x = year, y = n)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Anzahl der Genres nach Veröffentlichungsjahr",
+       x = "Veröffentlichungsjahr",
+       y = "Anzahl der Genres")
 lm <- lm(count_genre_vs_year$n ~ count_genre_vs_year$year)
+```
+
+Darauf basierend untersuchen wir nun die Residuen, wie zuvor beschrieben. Den ersten Schritt bildet ein Normal-Quantil-Plot der Residuen:
+
+```{r}
 residuals <- count_genre_vs_year %>%
   mutate(residual = n - coef(lm)[1] - year * coef(lm)[2])
 residuals %>% 
   ggplot(aes(sample = residual)) +
   stat_qq() +
-  stat_qq_line()
+  stat_qq_line() + 
+  labs(title = "Normal-Quantil-Plot der Residuen")
+```
 
+Wir beobachten zwei Dinge: Erstens, alle Punkte liegen nahe der Geraden einer perfekten Normalverteilung, die Residuen sind also annährend normalverteilt. Und zweitens, der Erwartungswert liegt vermutlich nahe der 0, da die Punkte in etwa symmetrisch um (0,0) liegen. Diese visuelle Untersuchung würde also für eine $N(0,\sigma^2)$ Verteilung sprechen, wie gewünscht. Wir wollen nun diese Vermutung mit dem Shapiro-Wilk-Test weiter untermauern:
+
+```{r}
 shapiro.test(residuals$residual)
-mean(residuals$residual)
+```
 
+Der $p$-Wert von $0.84$ ist relativ hoch. Der Test legt also eine Normalverteilung nahe. Betrachten wir nun noch das empirische Mittel der Residuen als Approximation des Erwartungswert erhalten wir
+```{r}
+mean(residuals$residual)
+```
+
+einen Wert der extrem nahe an der 0 liegt. Wir können also sinnvollerweise von einer $N(0,\sigma^2)$ der Residuen ausgehen. So haben wir nun die Anwendbarkeit der linearen Regression gezeigt. Wir gehen nun zur Beurteilung über. Dafür schauen wir uns eine Übersicht über das erstellte lineare Modell an:
+
+```{r}
 summary(lm)
 ```
 
+Neben der Übersicht über die Residuen, die wir bereits untersucht haben sind besonders die Informationen zu den Koeffizienten interessant. Die $p$-Werte der beiden Koeffizienten und der $F$-Statistik lassen alle mit sehr großer Sicherheit den Schluss zu, dass ein Einfluss der Koeffizienten besteht. Der $R^2$ Wert von $0.90$ ist nahe der Eins und damit ebenfalls ein gutes Indiz für ein sinnvolles Modell. Zusammenfassend lässt sich sagen, dass alle Größen deutlich die Vermutung eines linearen Zusammenhangs stützen, oder zumindest diesem nicht widersprechen.
+
+Wir sehen uns nun die numerischen Werte der Koeffizienten an. Das Lineare Modell beschreibt den Zusammenhang
+$$
+\text{Anzahl der Genres} = \text{Jahreszahl} \cdot 0.265 - 508.858
+$$
+In dieser Form ist die Formel aber wenig sinvoll, insbesondere der konstante Term $-508$, da eine Betrachtung im Jahr 0 natürlich Unfug ist. Wir schreiben die Formel also besser relativ zum Beginn unserer Daten, also 1965. Das führt auf
+
+```{r, include = FALSE}
+coef(lm)[1] + 1965 * coef(lm)[2]
+```
+
+$$
+\text{Anzahl der Genres} = 0.265 \cdot (\text{Jahreszahl} - 1965) + 12.445.
+$$
+
+In dieser Form ist offensichtlich, dass das lineare Modell einen durchschnittlichen Zuwachs von einem verfügbaren Genre rund alle 4 Jahre vorhersagt, ausgehend von gut 12 Genres im Jahr 1965. Aufgrund der vorhergehenden Überlegungen kann vernünftigerweise davon ausgegeangen werden, dass der tatsächliche Zusammenhang durch diese Formel sehr gut approximiert wird.
+
+*Fazit des Projekts und Bezug auf Forschungsfrage*
 
 ## Literatur
 [1] Statista Research Department (2021). _Netflix: Daten und Fakten zur Erfolgsgeschichte des Streaming-Riesen_. https://de.statista.com/themen/1840/netflix/
@@ -260,10 +301,12 @@ summary(lm)
 
 [3] Netflix. _How does Netflix license TV shows and movies?._ https://help.netflix.com/en/node/4976#:~:text=Netflix%20uses%20a%20variety%20of,shows%20and%20movies%20we%20suggest.
 
-[4] Ashish Gupta. _Daten._ https://www.kaggle.com/ashishgup/netflix-rotten-tomatoes-metacritic-imdb
+[4] Gupta, A. _Daten._ https://www.kaggle.com/ashishgup/netflix-rotten-tomatoes-metacritic-imdb
 
 [5] Rolles, S. (2021). Einführung in die Wahrscheinlichkeitstheorie und Statistik. Vorlesungsskript TUM
 
 [6] Bornemann, F. (2016). _Numerische lineare Algebra._ IV Kleinste Quadrate. https://doi.org/10.1007/978-3-658-24431-6
 
 [7] Shapiro, S. S., & Wilk, M. B. (1965). An Analysis of Variance Test for Normality (Complete Samples). Biometrika, 52(3/4), 591–611. https://doi.org/10.2307/2333709
+
+[8] Kreutzmann, A. _Output einer linearen Regression in R._ https://wikis.fu-berlin.de/display/fustat/Output+einer+linearen+Regression+in+R
