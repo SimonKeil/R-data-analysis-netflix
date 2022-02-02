@@ -156,10 +156,9 @@ Márk Reichmann, Simon Keil, Daniel Henke
   </p>
   <p class="date">6 1 2022</p>
 </div>
-<div id="präsentation-d" class="slide section level1">
-<h1>Präsentation :D</h1>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>raw_data <span class="sc">%&gt;%</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Title, <span class="st">`</span><span class="at">Release Date</span><span class="st">`</span>, Genre, <span class="st">`</span><span class="at">Country Availability</span><span class="st">`</span>)</span></code></pre></div>
+<div id="tibble-modifizieren-1" class="slide section level1">
+<h1>Tibble modifizieren (1)</h1>
+<p>unser Datensatz (die interessanten Variablen):</p>
 <pre><code>## # A tibble: 15,480 x 4
 ##    Title               `Release Date` Genre         `Country Availability`      
 ##    &lt;chr&gt;               &lt;chr&gt;          &lt;chr&gt;         &lt;chr&gt;                       
@@ -175,13 +174,88 @@ Márk Reichmann, Simon Keil, Daniel Henke
 ## 10 Snowroller          04 Oct 1985    Comedy        Lithuania,Poland,France,Ita~
 ## # ... with 15,470 more rows</code></pre>
 </div>
-<div id="präsentation-d-1" class="slide section level1">
-<h1>Präsentation :D</h1>
-<p>test test</p>
+<div id="tibble-modifizieren-2" class="slide section level1">
+<h1>Tibble modifizieren (2)</h1>
+<p><code>Release Date</code> und <code>Title</code> sind nur zusammen eindeutig</p>
+<pre><code>## # A tibble: 2 x 3
+##   Title                             `Release Date` `Series or Movie`
+##   &lt;chr&gt;                             &lt;chr&gt;          &lt;chr&gt;            
+## 1 Cloudy with a Chance of Meatballs 20 Feb 2017    Series           
+## 2 Cloudy with a Chance of Meatballs 18 Sep 2009    Movie</code></pre>
 </div>
-<div id="präsentation-d-2" class="slide section level1">
-<h1>Präsentation :D</h1>
-<p>test test</p>
+<div id="tibble-modifizieren-3" class="slide section level1">
+<h1>Tibble modifizieren (3)</h1>
+<p>leider gibt es Duplikate:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>daten <span class="sc">%&gt;%</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(Title, <span class="st">`</span><span class="at">Release Date</span><span class="st">`</span>)<span class="sc">%&gt;%</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(n<span class="sc">&gt;</span><span class="dv">1</span>)</span></code></pre></div>
+<pre><code>## # A tibble: 148 x 3
+##    Title                               `Release Date`     n
+##    &lt;chr&gt;                               &lt;chr&gt;          &lt;int&gt;
+##  1 A Bride for Rip Van Winkle          26 Mar 2016        2
+##  2 A Love So Beautiful                 09 Nov 2017        2
+##  3 A Perfect Day                       15 Jan 2016        2
+##  4 About Time                          08 Nov 2013        2
+##  5 Aftermath                           07 Apr 2017        2
+##  6 Aliens                              18 Jul 1986        2
+##  7 Alone                               07 Nov 2008        2
+##  8 Anastasia                           21 Nov 1997        2
+##  9 Anohana: The Flower We Saw That Day 14 Apr 2011        2
+## 10 Another                             09 Jan 2012        2
+## # ... with 138 more rows</code></pre>
+</div>
+<div id="tibble-modifizieren-4" class="slide section level1">
+<h1>Tibble modifizieren (4)</h1>
+<p>das sind diejenigen Filme, die mehrmals auf Netflix releast wurden</p>
+<pre><code>## # A tibble: 2 x 4
+##   Title         `Release Date` Genre              `Country Availability`
+##   &lt;chr&gt;         &lt;chr&gt;          &lt;chr&gt;              &lt;chr&gt;                 
+## 1 A Perfect Day 15 Jan 2016    Comedy, Drama, War Italy                 
+## 2 A Perfect Day 15 Jan 2016    Comedy, Drama, War Romania,Poland</code></pre>
+<p>Lösung:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>daten <span class="sc">%&gt;%</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Title <span class="sc">==</span> <span class="st">&quot;A Perfect Day&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Title, <span class="st">`</span><span class="at">Release Date</span><span class="st">`</span>, Genre, <span class="st">`</span><span class="at">Country Availability</span><span class="st">`</span>)<span class="sc">%&gt;%</span> </span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate_rows</span>(<span class="st">`</span><span class="at">Country Availability</span><span class="st">`</span>, <span class="at">sep =</span> <span class="st">&quot;,&quot;</span>)<span class="sc">%&gt;%</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(<span class="at">.keep_all =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<pre><code>## # A tibble: 3 x 4
+##   Title         `Release Date` Genre              `Country Availability`
+##   &lt;chr&gt;         &lt;chr&gt;          &lt;chr&gt;              &lt;chr&gt;                 
+## 1 A Perfect Day 15 Jan 2016    Comedy, Drama, War Italy                 
+## 2 A Perfect Day 15 Jan 2016    Comedy, Drama, War Romania               
+## 3 A Perfect Day 15 Jan 2016    Comedy, Drama, War Poland</code></pre>
+</div>
+<div id="tibble-modifizieren-5" class="slide section level1">
+<h1>Tibble modifizieren (5)</h1>
+<p>selbiges auch mit Genre</p>
+<pre><code>## # A tibble: 3 x 3
+##   Title         `Release Date` `Country Availability`
+##   &lt;chr&gt;         &lt;chr&gt;          &lt;chr&gt;                 
+## 1 A Perfect Day 15 Jan 2016    Italy                 
+## 2 A Perfect Day 15 Jan 2016    Romania               
+## 3 A Perfect Day 15 Jan 2016    Poland</code></pre>
+<pre><code>## # A tibble: 3 x 3
+##   Title         `Release Date` Genre 
+##   &lt;chr&gt;         &lt;chr&gt;          &lt;chr&gt; 
+## 1 A Perfect Day 15 Jan 2016    Comedy
+## 2 A Perfect Day 15 Jan 2016    Drama 
+## 3 A Perfect Day 15 Jan 2016    War</code></pre>
+<p>diese beiden Tibbles werden jetzt an <code>Title</code>, <code>Release Date</code> gejoint</p>
+</div>
+<div id="tibble-modifizieren-5-1" class="slide section level1">
+<h1>Tibble modifizieren (5)</h1>
+<pre><code>## # A tibble: 9 x 4
+##   Title         `Release Date` `Country Availability` Genre 
+##   &lt;chr&gt;         &lt;chr&gt;          &lt;chr&gt;                  &lt;chr&gt; 
+## 1 A Perfect Day 15 Jan 2016    Italy                  Comedy
+## 2 A Perfect Day 15 Jan 2016    Italy                  Drama 
+## 3 A Perfect Day 15 Jan 2016    Italy                  War   
+## 4 A Perfect Day 15 Jan 2016    Romania                Comedy
+## 5 A Perfect Day 15 Jan 2016    Romania                Drama 
+## 6 A Perfect Day 15 Jan 2016    Romania                War   
+## 7 A Perfect Day 15 Jan 2016    Poland                 Comedy
+## 8 A Perfect Day 15 Jan 2016    Poland                 Drama 
+## 9 A Perfect Day 15 Jan 2016    Poland                 War</code></pre>
 </div>
 
   <!-- dynamically load mathjax for compatibility with self-contained -->

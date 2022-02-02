@@ -8,27 +8,88 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE,
+	echo = FALSE)
 library("tidyverse")
 raw_data <- read_csv("../Data/netflix-rotten-tomatoes-metacritic-imdb.csv")
 ```
 
-# Präsentation :D
+# Tibble modifizieren (1)
 
+unser Datensatz (die interessanten Variablen):
 ```{r}
-raw_data %>%
+daten <- raw_data %>%
   select(Title, `Release Date`, Genre, `Country Availability`)
+daten
 ```
 
 
+# Tibble modifizieren (2)
 
-# Präsentation :D
+`Release Date` und `Title` sind nur zusammen eindeutig
 
-test test
+```{r}
+raw_data %>%
+  select(Title, `Release Date`, `Series or Movie`) %>%
+  filter(Title == "Cloudy with a Chance of Meatballs")
+```
 
 
-# Präsentation :D
+# Tibble modifizieren (3)
 
-test test
+leider gibt es Duplikate:
 
+```{r echo=TRUE}
+daten %>%
+  count(Title, `Release Date`)%>%
+  filter(n>1)
+```
+
+# Tibble modifizieren (4)
+
+das sind diejenigen Filme, die mehrmals auf Netflix releast wurden
+
+```{r}
+daten%>%
+  filter(Title == "A Perfect Day")
+```
+Lösung: 
+
+```{r echo=TRUE}
+daten %>%
+  filter(Title == "A Perfect Day") %>%
+  select(Title, `Release Date`, Genre, `Country Availability`)%>% 
+  separate_rows(`Country Availability`, sep = ",")%>%
+  distinct(.keep_all = TRUE)
+```
+
+
+# Tibble modifizieren (5)
+
+selbiges auch mit Genre
+```{r}
+A = daten %>%
+  filter(Title == "A Perfect Day") %>%
+  select(Title, `Release Date`, `Country Availability`)%>% 
+  separate_rows(`Country Availability`, sep = ",")%>%
+  distinct(.keep_all = TRUE)
+
+B = daten %>%
+  filter(Title == "A Perfect Day") %>%
+  select(Title, `Release Date`, Genre)%>% 
+  separate_rows(Genre, sep = ", ")%>%
+  distinct(.keep_all = TRUE)
+
+A
+B
+```
+
+diese beiden Tibbles werden jetzt an `Title`, `Release Date` gejoint
+
+
+# Tibble modifizieren (5)
+
+```{r}
+full_join(A, B, by = c("Release Date", "Title"))
+```
 
