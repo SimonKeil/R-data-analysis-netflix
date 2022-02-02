@@ -1,12 +1,34 @@
 ---
-title: "praesentation"
+title: "Praesentation"
 author: "Márk Reichmann, Simon Keil, Daniel Henke"
 date: "6 1 2022"
-output: html_document
+output:
+  slidy_presentation: default
+  beamer_presentation: default
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library("tidyverse")
+raw_data <- read_csv("../Data/netflix-rotten-tomatoes-metacritic-imdb.csv")
 ```
 
-#Präsentation :D
+# Präsentation :D
+
+```{r}
+raw_data %>%
+  select(Title, `Release Date`, Genre, `Country Availability`)
+```
+
+
+
+# Präsentation :D
+
+test test
+
+
+# Präsentation :D
+
+test test
+
+
