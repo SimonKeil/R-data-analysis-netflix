@@ -1,5 +1,5 @@
 ---
-title: "R-Projekt"
+title: "R-Projekt: \"Netflix im Wandel der Zeit\""
 author: "Márk Reichmann, Simon Keil, Daniel Henke"
 output: pdf_document
 ---
