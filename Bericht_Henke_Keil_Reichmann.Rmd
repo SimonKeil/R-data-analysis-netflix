@@ -280,7 +280,7 @@ Wir sehen uns nun die numerischen Werte der Koeffizienten an. Das Lineare Modell
 $$
 \text{Anzahl der Genres} = \text{Jahreszahl} \cdot 0.265 - 508.858
 $$
-In dieser Form ist die Formel aber wenig sinvoll, insbesondere der konstante Term $-508$, da eine Betrachtung im Jahr 0 natürlich Unfug ist. Wir schreiben die Formel also besser relativ zum Beginn unserer Daten, also 1965. Das führt auf
+In dieser Form ist die Formel aber wenig sinnvoll, insbesondere der konstante Term $-508$, da eine Betrachtung im Jahr 0 natürlich Unfug ist. Wir schreiben die Formel also besser relativ zum Beginn unserer Daten, also 1965. Das führt auf
 
 ```{r, include = FALSE}
 coef(lm)[1] + 1965 * coef(lm)[2]
@@ -292,7 +292,16 @@ $$
 
 In dieser Form ist offensichtlich, dass das lineare Modell einen durchschnittlichen Zuwachs von einem verfügbaren Genre rund alle 4 Jahre vorhersagt, ausgehend von gut 12 Genres im Jahr 1965. Aufgrund der vorhergehenden Überlegungen kann vernünftigerweise davon ausgegeangen werden, dass der tatsächliche Zusammenhang durch diese Formel sehr gut approximiert wird.
 
-*Fazit des Projekts und Bezug auf Forschungsfrage*
+**Fazit des Projekts und Bezug auf Forschungsfrage**
+
+Woran liegt diese lineare Steigung der Genre-Anzahl? Wir sehen hier zwei plausible Einflussfaktoren: die Auswahl von Netflix und eine allgemeine Genre-Zunahme in der Film- & TV-Industrie.
+
+Netflix wählt nämlich, wie in der Einleitung schon festgestellt, die zur Verfügung gestellten Inhalte sehr genau und auch datenbasiert aus [3]. Aufgrund von Konkurrenz im Streaming-Bereich hat Netflix in den letzten Jahren mehr und mehr eigene Inhalte für ihre Plattform erstellt (diese werden innerhalb unserer Daten leider bei Serien nicht als solche in "Production House" deklariert, sodass dies nach unseren Daten nicht genauer nachvollziehbar sind). Seit den ersten Netflix-Original Inhalten in 2012/13 ist die Anzahl kontinuierlich gestiegen. So hat z.B. 2019 Netflix 657 Originialinhalte auf ihrer Plattform gestellt [9]. Bei diesen Inhalten hat Netflix komplette kreative Kontrolle, sodass sie in den letzten Jahren diverse Inhalte in diversen Genres erstellen konnten.
+
+Da dies aber höchstens den Anstieg ab 2012/13 erklären würde (und dieser nicht erkennbar höher als die Jahre zuvor), ist dieser Anstieg vermutlich eher mit einem allgemeinen Anstieg an Genre-Diversität in der Film- und TV-Industrie. _(Ich hätte hier gerne eine Quelle, die das gleiche oder das gegenteilige behauptet, ich hab leider nichts gefunden. Gerne ergänzen, falls ihr da was habt. ~Daniel)_ Da unsere Daten aber nur eine Teilmenge aller Filme und Serien darstellt, können wir einen allgemeinen Trend nicht definitiv nachweisen. 
+
+Dennoch bleibt es spannend zu beobachten, inwiefern dieser Trend bestehen bleibt. Wird es in den nächsten Jahren noch weiter linear wachsend mehr Genres geben oder erreichen wir in Zukunft einen Hoch- und Wendepunkt? Nur die Zeit wird zeigen, wie Genre-divers die Inhalte sein werden - auf dieser ehemals kleinen Online-Videothek aus Kalifornien.
+
 
 ## Literatur
 [1] Statista Research Department (2021). _Netflix: Daten und Fakten zur Erfolgsgeschichte des Streaming-Riesen_. https://de.statista.com/themen/1840/netflix/
@@ -303,10 +312,13 @@ In dieser Form ist offensichtlich, dass das lineare Modell einen durchschnittlic
 
 [4] Gupta, A. _Daten._ https://www.kaggle.com/ashishgup/netflix-rotten-tomatoes-metacritic-imdb
 
-[5] Rolles, S. (2021). Einführung in die Wahrscheinlichkeitstheorie und Statistik. Vorlesungsskript TUM
+[5] Rolles, S. (2021). _Einführung in die Wahrscheinlichkeitstheorie und Statistik._ Vorlesungsskript TUM
 
 [6] Bornemann, F. (2016). _Numerische lineare Algebra._ IV Kleinste Quadrate. https://doi.org/10.1007/978-3-658-24431-6
 
-[7] Shapiro, S. S., & Wilk, M. B. (1965). An Analysis of Variance Test for Normality (Complete Samples). Biometrika, 52(3/4), 591–611. https://doi.org/10.2307/2333709
+[7] Shapiro, S. S., & Wilk, M. B. (1965). _An Analysis of Variance Test for Normality (Complete Samples)._ Biometrika, 52(3/4), 591–611. https://doi.org/10.2307/2333709
 
 [8] Kreutzmann, A. _Output einer linearen Regression in R._ https://wikis.fu-berlin.de/display/fustat/Output+einer+linearen+Regression+in+R
+
+[9] Dreßler, G. _Netflix übertrumpft Amazon in Original-Produktionen._
+https://www.digitalfernsehen.de/news/medien-news/maerkte/netflix-uebertrumpft-amazon-in-original-produktionen-554081/ (17. März 2020)
