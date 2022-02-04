@@ -176,7 +176,7 @@ left_join(year_per_genre, year_genre_total, by = "year") %>%
   mutate(prop = n.x/n.y) %>% 
   ggplot(aes(x = year, y = prop, color = Genre)) +
   geom_point(size = 1) +
-  labs(title = "Anzahl der verfügbaren Genres nach Veröffentlichungsjahr",
+  labs(title = "Anteil der verfügbaren Genres nach Veröffentlichungsjahr",
     x = "Veröffentlichungsjahr",
     y = "Anteil der Genres")
 ```

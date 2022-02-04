@@ -3,16 +3,60 @@ title: "Praesentation"
 author: "Márk Reichmann, Simon Keil, Daniel Henke"
 date: "6 1 2022"
 output:
-  slidy_presentation: default
   beamer_presentation: default
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE,
-	echo = FALSE)
+	echo = FALSE, message = FALSE)
+
 library("tidyverse")
 raw_data <- read_csv("../Data/netflix-rotten-tomatoes-metacritic-imdb.csv")
+
+data <- raw_data %>%
+  rename(country = 'Country Availability') %>%
+  # reformat release date to only the year
+  mutate(year = as.integer(substr(`Release Date`, 8, 12))) %>% 
+  # exclude years with close to no entries
+  filter(year > 1965 & year < 2020) %>% 
+  select(Genre, year, Title, country) %>%
+  drop_na()
+
+# unique content + Genre
+content_genre <- data %>%
+  select(Genre, year, Title) %>% 
+  separate_rows(Genre, sep = ", ") %>%
+  distinct(.keep_all = TRUE)
+
+# unique content + country
+content_country <- data %>%
+  select(year, Title, country) %>% 
+  separate_rows(country, sep = ",") %>%
+  distinct(.keep_all = TRUE)
+
+# dataset with list of genres and countries separated into individual rows
+data_expanded <- full_join(content_genre, content_country, by = c("year", "Title")) %>%
+  ungroup()
+
+# dataset with list of genres separated into individual rows
+data_genre <- data_expanded %>%
+  group_by(Genre, year, Title) %>%
+  summarise(country = paste(country, collapse = ", ")) %>%
+  ungroup()
+
+# dataset with list of countries separated into individual rows
+data_country <- data_expanded %>%
+  group_by(country, year, Title) %>%
+  summarise(Genre = paste(Genre, collapse = ", ")) %>%
+  ungroup()
+
+# dataset to work with throughout the analysis
+data_basic <- data_genre %>%
+  group_by(country, year, Title) %>%
+  summarise(Genre = paste(Genre, collapse = ", ")) %>%
+  ungroup()
 ```
+
 
 # Tibble modifizieren (1)
 
@@ -93,3 +137,58 @@ diese beiden Tibbles werden jetzt an `Title`, `Release Date` gejoint
 full_join(A, B, by = c("Release Date", "Title"))
 ```
 
+#
+
+```{r}
+data_genre %>%
+  count(Genre) %>% 
+  arrange(n) %>%
+  ggplot(aes(x = factor(Genre, levels = Genre), y = n)) +
+  geom_bar(stat = 'identity') +
+  labs(title = "Ranking der Genres",
+    x = "Genre",
+    y = "Anzahl der Inhalte") +  coord_flip()
+```
+
+#
+
+```{r}
+year_per_genre <- data_genre %>%
+  count(year, Genre)
+year_genre_total <- data_genre %>% count(year)
+left_join(year_per_genre, year_genre_total, by = "year") %>% 
+  mutate(prop = n.x/n.y) %>% 
+  ggplot(aes(x = year, y = prop, color = Genre)) +
+  geom_point(size = 1) +
+  labs(title = "Anzahl der verfügbaren Genres nach Veröffentlichungsjahr",
+    x = "Veröffentlichungsjahr",
+    y = "Anteil der Genres")
+```
+
+#
+
+```{r}
+count_genre_vs_year <- data_genre %>%
+  select(Genre, year) %>% 
+  group_by(year) %>% 
+  distinct() %>% 
+  count(year)
+count_genre_vs_year %>%
+  ggplot(aes(x = year, y = n)) +
+  geom_point() +
+  labs(title = "Anzahl der Genres nach Veröffentlichungsjahr",
+       x = "Veröffentlichungsjahr",
+       y = "Anzahl der Genres")
+```
+
+#
+
+```{r}
+count_genre_vs_year %>%
+  ggplot(aes(x = year, y = n)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Anzahl der Genres nach Veröffentlichungsjahr",
+       x = "Veröffentlichungsjahr",
+       y = "Anzahl der Genres")
+```
