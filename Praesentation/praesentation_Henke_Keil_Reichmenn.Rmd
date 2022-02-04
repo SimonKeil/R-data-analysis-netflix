@@ -61,44 +61,47 @@ data_basic <- data_genre %>%
 # Tibble modifizieren (1)
 
 unser Datensatz (die interessanten Variablen):
+\tiny
 ```{r}
 daten <- raw_data %>%
   select(Title, `Release Date`, Genre, `Country Availability`)
 daten
 ```
-
+\normalsize
 
 # Tibble modifizieren (2)
 
 `Release Date` und `Title` sind nur zusammen eindeutig
-
+\tiny
 ```{r}
 raw_data %>%
   select(Title, `Release Date`, `Series or Movie`) %>%
   filter(Title == "Cloudy with a Chance of Meatballs")
 ```
-
+\normalsize
 
 # Tibble modifizieren (3)
 
 leider gibt es Duplikate:
-
+\tiny
 ```{r echo=TRUE}
 daten %>%
   count(Title, `Release Date`)%>%
   filter(n>1)
 ```
+\normalsize
 
 # Tibble modifizieren (4)
 
 das sind diejenigen Filme, die mehrmals auf Netflix releast wurden
-
+\tiny
 ```{r}
 daten%>%
   filter(Title == "A Perfect Day")
 ```
+\normalsize
 Lösung: 
-
+\tiny
 ```{r echo=TRUE}
 daten %>%
   filter(Title == "A Perfect Day") %>%
@@ -106,11 +109,12 @@ daten %>%
   separate_rows(`Country Availability`, sep = ",")%>%
   distinct(.keep_all = TRUE)
 ```
-
+\normalsize
 
 # Tibble modifizieren (5)
 
 selbiges auch mit Genre
+\tiny
 ```{r}
 A = daten %>%
   filter(Title == "A Perfect Day") %>%
@@ -127,15 +131,17 @@ B = daten %>%
 A
 B
 ```
+\normalsize
 
 diese beiden Tibbles werden jetzt an `Title`, `Release Date` gejoint
 
 
-# Tibble modifizieren (5)
-
+# Tibble modifizieren (6)
+\tiny
 ```{r}
 full_join(A, B, by = c("Release Date", "Title"))
 ```
+\normalsize
 
 #
 
@@ -147,7 +153,9 @@ data_genre %>%
   geom_bar(stat = 'identity') +
   labs(title = "Ranking der Genres",
     x = "Genre",
-    y = "Anzahl der Inhalte") +  coord_flip()
+    y = "Anzahl der Inhalte") +
+  coord_flip() +
+  theme_light(20)
 ```
 
 #
@@ -160,9 +168,10 @@ left_join(year_per_genre, year_genre_total, by = "year") %>%
   mutate(prop = n.x/n.y) %>% 
   ggplot(aes(x = year, y = prop, color = Genre)) +
   geom_point(size = 1) +
-  labs(title = "Anzahl der verfügbaren Genres nach Veröffentlichungsjahr",
+  labs(title = "Anteil der verfügbaren Genres nach Veröffentlichungsjahr",
     x = "Veröffentlichungsjahr",
-    y = "Anteil der Genres")
+    y = "Anteil der Genres") +
+  theme_light(20)
 ```
 
 #
@@ -178,7 +187,8 @@ count_genre_vs_year %>%
   geom_point() +
   labs(title = "Anzahl der Genres nach Veröffentlichungsjahr",
        x = "Veröffentlichungsjahr",
-       y = "Anzahl der Genres")
+       y = "Anzahl der Genres") +
+  theme_light(20)
 ```
 
 #
@@ -190,5 +200,6 @@ count_genre_vs_year %>%
   geom_smooth(method = "lm", se = FALSE) +
   labs(title = "Anzahl der Genres nach Veröffentlichungsjahr",
        x = "Veröffentlichungsjahr",
-       y = "Anzahl der Genres")
+       y = "Anzahl der Genres") +
+  theme_light(20)
 ```
