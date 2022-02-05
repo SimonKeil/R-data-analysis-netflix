@@ -161,6 +161,22 @@ data_tidy %>%
 #
 
 ```{r}
+data_country %>% 
+  count(Title, year) %>%
+  group_by(year) %>% 
+  summarise(number = mean(n)) %>%
+  ggplot(aes(x = year, y = number)) +
+  geom_point() +
+  labs(title = "Internationalität im zeitlichen Verlauf",
+       y = "Durchschnittliche Zahl der Länder pro Inhalt",
+       x = "Veröffentlichungsjahr") +
+  geom_smooth() +
+  theme_light(20)
+```
+
+#
+
+```{r}
 data_genre %>%
   count(Genre) %>% 
   arrange(n) %>%
