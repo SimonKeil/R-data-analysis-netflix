@@ -70,8 +70,6 @@ data
 ```
 \normalsize
 
-# Tibble modifizieren (2)
-
 `year` und `Title` sind nur zusammen eindeutig
 \tiny
 ```{r}
@@ -82,7 +80,7 @@ raw_data %>%
 ```
 \normalsize
 
-# Tibble modifizieren (3)
+# Tibble modifizieren (2)
 
 leider gibt es Duplikate:
 \tiny
@@ -93,7 +91,7 @@ data %>%
 ```
 \normalsize
 
-# Tibble modifizieren (4)
+# Tibble modifizieren (3)
 
 das sind diejenigen Filme, die mehrmals auf Netflix releast wurden
 \tiny
@@ -105,19 +103,6 @@ data%>%
 
 
 Lösung: 
-\tiny
-```{r echo=TRUE}
-data %>%
-  filter(Title == "A Perfect Day") %>%
-  select(Title, year, country)%>% 
-  separate_rows(country, sep = ",")%>%
-  distinct(.keep_all = TRUE)
-```
-\normalsize
-
-# Tibble modifizieren (5)
-
-selbiges auch mit Genre
 \tiny
 ```{r}
 countries = data %>%
@@ -137,17 +122,15 @@ genres
 ```
 \normalsize
 
-diese beiden Tibbles werden jetzt an `Title`, `year` gejoint
 
-
-# Tibble modifizieren (6)
+# Tibble modifizieren (4)
 \tiny
-```{r echo=TRUE}
+```{r}
 data_tidy <- full_join(countries, genres, by = c("year", "Title"))
 data_tidy
 ```
 
-```{r echo=TRUE}
+```{r}
 data_tidy %>%
   group_by(Title, year, country) %>%
   summarise(Genre = paste(Genre, collapse = ", ")) %>%
