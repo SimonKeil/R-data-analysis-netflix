@@ -157,6 +157,32 @@ data_tidy %>%
 ```
 
 \normalsize
+#
+
+```{r}
+data_basic %>% 
+  count(year) %>% 
+  ggplot(aes(x = year, y = n)) +
+  geom_point() +
+  scale_y_log10() +
+  labs(x = "Veröffentlichungsjahr",
+    y = "Anzahl der Inhalte") +
+  theme_light(20)
+```
+
+#
+
+```{r}
+data_country %>%
+  count(country)%>%
+  select(n, country)%>%
+  ggplot(aes(x = n, y = reorder(country, n)))+
+  geom_point()+
+  labs(title = "Anzahl verfügbarer Inhalte in den Ländern",
+       x = "Anzahl der Inhalte", 
+       y = "Land") +
+  theme_light(18)
+```
 
 #
 
