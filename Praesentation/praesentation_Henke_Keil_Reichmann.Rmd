@@ -117,20 +117,8 @@ genres = data %>%
   separate_rows(Genre, sep = ", ")%>%
   distinct(.keep_all = TRUE)
 
-countries
-genres
-```
-\normalsize
-
-
-# Tibble modifizieren (4)
-\tiny
-```{r}
 data_tidy <- full_join(countries, genres, by = c("year", "Title"))
-data_tidy
-```
 
-```{r}
 data_tidy %>%
   group_by(Title, year, country) %>%
   summarise(Genre = paste(Genre, collapse = ", ")) %>%
