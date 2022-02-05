@@ -19,7 +19,7 @@ data <- raw_data %>%
   mutate(year = as.integer(substr(`Release Date`, 8, 12))) %>% 
   # exclude years with close to no entries
   filter(year > 1965 & year < 2020) %>% 
-  select(Genre, year, Title, country) %>%
+  select(Title, year, Genre, country) %>%
   drop_na()
 
 # unique content + Genre
@@ -63,19 +63,18 @@ data_basic <- data_genre %>%
 unser Datensatz (die interessanten Variablen):
 \tiny
 ```{r}
-daten <- raw_data %>%
-  select(Title, `Release Date`, Genre, `Country Availability`)
-daten
+data
 ```
 \normalsize
 
 # Tibble modifizieren (2)
 
-`Release Date` und `Title` sind nur zusammen eindeutig
+`year` und `Title` sind nur zusammen eindeutig
 \tiny
 ```{r}
 raw_data %>%
-  select(Title, `Release Date`, `Series or Movie`) %>%
+  mutate(year = as.integer(substr(`Release Date`, 8, 12))) %>%
+  select(Title, year, `Series or Movie`) %>%
   filter(Title == "Cloudy with a Chance of Meatballs")
 ```
 \normalsize
@@ -85,8 +84,8 @@ raw_data %>%
 leider gibt es Duplikate:
 \tiny
 ```{r echo=TRUE}
-daten %>%
-  count(Title, `Release Date`)%>%
+data %>%
+  count(Title, year)%>%
   filter(n>1)
 ```
 \normalsize
@@ -96,17 +95,19 @@ daten %>%
 das sind diejenigen Filme, die mehrmals auf Netflix releast wurden
 \tiny
 ```{r}
-daten%>%
+data%>%
   filter(Title == "A Perfect Day")
 ```
 \normalsize
+
+
 Lösung: 
 \tiny
 ```{r echo=TRUE}
-daten %>%
+data %>%
   filter(Title == "A Perfect Day") %>%
-  select(Title, `Release Date`, Genre, `Country Availability`)%>% 
-  separate_rows(`Country Availability`, sep = ",")%>%
+  select(Title, year, country)%>% 
+  separate_rows(country, sep = ",")%>%
   distinct(.keep_all = TRUE)
 ```
 \normalsize
@@ -116,31 +117,42 @@ daten %>%
 selbiges auch mit Genre
 \tiny
 ```{r}
-A = daten %>%
+countries = data %>%
   filter(Title == "A Perfect Day") %>%
-  select(Title, `Release Date`, `Country Availability`)%>% 
-  separate_rows(`Country Availability`, sep = ",")%>%
+  select(Title, year, country)%>% 
+  separate_rows(country, sep = ",")%>%
   distinct(.keep_all = TRUE)
 
-B = daten %>%
+genres = data %>%
   filter(Title == "A Perfect Day") %>%
-  select(Title, `Release Date`, Genre)%>% 
+  select(Title, year, Genre)%>% 
   separate_rows(Genre, sep = ", ")%>%
   distinct(.keep_all = TRUE)
 
-A
-B
+countries
+genres
 ```
 \normalsize
 
-diese beiden Tibbles werden jetzt an `Title`, `Release Date` gejoint
+diese beiden Tibbles werden jetzt an `Title`, `year` gejoint
 
 
 # Tibble modifizieren (6)
 \tiny
-```{r}
-full_join(A, B, by = c("Release Date", "Title"))
+```{r echo=TRUE}
+data_tidy <- full_join(countries, genres, by = c("year", "Title"))
+data_tidy
 ```
+
+```{r echo=TRUE}
+data_tidy %>%
+  group_by(Title, year, country) %>%
+  summarise(Genre = paste(Genre, collapse = ", ")) %>%
+  group_by(Title, year, Genre) %>%
+  summarise(country = paste(country, collapse = ", ")) %>%
+  ungroup()
+```
+
 \normalsize
 
 #
