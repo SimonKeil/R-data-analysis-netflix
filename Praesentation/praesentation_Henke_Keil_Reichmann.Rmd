@@ -1,9 +1,12 @@
 ---
-title: "Praesentation"
+title: "Netflix im Wandel der Zeit"
 author: "Márk Reichmann, Simon Keil, Daniel Henke"
-date: "6 1 2022"
-output:
-  beamer_presentation: default
+date: \today
+header-includes:
+   - \usepackage[ngerman]{babel}
+output: 
+  beamer_presentation:
+    theme: Singapore
 ---
 
 ```{r setup, include=FALSE}
