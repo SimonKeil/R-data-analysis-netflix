@@ -1,4 +1,5 @@
 Simple data analysis of a web-crawled netflix dataset. Completed as part of a university course.
+See Bericht_Henke_Keil_Reichmann.pdf for the results.
 
 # Netflix im Wandel der Zeit
 
