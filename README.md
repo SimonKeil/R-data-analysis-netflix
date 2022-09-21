@@ -1,3 +1,5 @@
+Simple data analysis of a web-crawled netflix dataset. Completed as part of a university course.
+
 # Netflix im Wandel der Zeit
 
 das R-Projekt für EWS im WS 2021 von:
